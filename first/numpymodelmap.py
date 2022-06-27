@@ -24,21 +24,29 @@ class OutOfBoundsError(Exception):
 class MovementRuleViolationError(Exception):
     pass
 
-class ModelMap:
+class NumpyModelMap:
     def __init__(self, size_x: int, size_y: int, movement_rule: typing.Callable = None):
         '''
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
-        self.movement_rule = movement_rule
-        self.locs: typing.Dict[Position, Location] = dict()
-        self.agent_pos: typing.Dict[AgentID, Position] = dict()
-        self.size_x = size_x
-        self.size_y = size_y
         
-        for x, y in zip(list(range(size_x)), list(range(size_y))):
-            pos = Position(x, y)
-            self.locs[pos] = Location(pos, self)
+        # verifies that an agent move is allowed
+        self.movement_rule = movement_rule
+        
+        # add agents
+        rows = list()
+        for y in range(size_y):
+            rows.append([Location(self, Position(x,y)) for x in range(size_x)])
+
+        self.locs: np.ndarray = np.array(rows)
+        self.agent_pos: typing.Dict[AgentID, Position] = dict()
+
+    @property
+    def size_x(self): return self.locs.shape[1]
+    
+    @property
+    def size_y(self): return self.locs.shape[0]
 
     def __repr__(self):
         return f'{self.__class__.__name__}(size={self.size_x}x{self.size_y})'
