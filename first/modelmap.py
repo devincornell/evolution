@@ -30,9 +30,9 @@ class ModelMap:
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
-        self.movement_rule = movement_rule
         self.locs: typing.Dict[Position, Location] = dict()
         self.agent_pos: typing.Dict[AgentID, Position] = dict()
+        self.movement_rule = movement_rule
         self.size_x = size_x
         self.size_y = size_y
         
@@ -44,17 +44,15 @@ class ModelMap:
         return f'{self.__class__.__name__}(size={self.size_x}x{self.size_y})'
     
     ############################# Working With Locations #############################
-    def __getitem__(self, pos: Position):
+    def __getitem__(self, pos: Position) -> Location:
         '''Get location at desired position.'''
-        return self.get_loc(pos)
+        try:
+            return self.locs[pos]
+        except KeyError:
+            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
     def __contains__(self, agent_id: AgentID):
-        return agent_id in self.locs
-
-    def get_loc(self, pos: Position) -> Location:
-        '''Get location at desired position.'''
-        self.check_pos(pos)
-        return self.locs[pos.y, pos.x]
+        return agent_id in self.agent_pos
     
     def check_pos(self, pos: Position) -> None:
         '''Check if position is within map, otherwise raise exception.'''
@@ -63,15 +61,13 @@ class ModelMap:
     
     def region(self, center: Position, dist: int) -> np.ndarray:
         '''Get 2d array of squares within the given distance.'''
-        ymin = max(center.y-dist, 0)
-        ymax = min(center.y+dist+1, self.locs.shape[0])
-        xmin = max(center.x-dist, 0)
-        xmax = min(center.x+dist+1, self.locs.shape[1])
-        return self.locs[ymin:ymax, xmin:xmax]
+        rng = list(range(-dist, dist+1))
+        x, y = center.x, center.y
+        return [self[Position(x+xd,y+yd)] for xd in rng for yd in rng]
 
     def region_locs(self, center: Position, dist: int, **flatten_kwargs):
         '''Get sequence of locations in the given region.'''
-        return self.region(center, dist).flatten(**flatten_kwargs)
+        #return self.region(center, dist).flatten(**flatten_kwargs)
     
     ############################# Working With Agents #############################
     def get_agent_pos(self, agent_id: AgentID) -> Position:
