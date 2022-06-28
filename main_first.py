@@ -4,8 +4,45 @@ import first
 if __name__ == '__main__':
     #mm = first.ModelMap(10, 5)
     p = first.CyHexPosition(0, 0, 0)
-    print(p)
-    
+    #print(p.q)
+    p2 = first.CHPos(0, 0, 0)
+    #print(p2.q)
+#
+    #print(dir(p))
+    #print(dir(p2))
+    #exit()
+
+    avoidset = set([
+        first.CyHexPosition(-1, 1, 0),
+        first.CyHexPosition(-2, 2, 0),
+        first.CyHexPosition(-3, 3, 0),
+        first.CyHexPosition(-2, 3, -1),
+        first.CyHexPosition(-1, 3, -2),
+        first.CyHexPosition(-2, 0, 2),
+        first.CyHexPosition(-1, -1, 2),
+        first.CyHexPosition(3, -1, -2),
+    ])
+
+    target = first.CyHexPosition(-3, 4, -1)
+
+    path = p.shortest_path_dfs(target, avoidset)
+    pathset = set(path)
+    print(path)
+
+    hmap = first.HexMap(5, {'blocked': False, 'passed': True})
+    for loc in hmap:
+        loc.state['blocked'] = loc.pos in avoidset
+        loc.state['passed'] = loc.pos in pathset
+
+    loc_info = hmap.get_loc_info()
+    for ldata in loc_info:
+        print(ldata)
+
+    import pickle
+    with open('tmp/tmp_loc_info.pic', 'wb') as f:
+        pickle.dump(loc_info, f)
+
+    exit()
     for r in p.neighbors():
         print(r)
         

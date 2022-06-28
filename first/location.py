@@ -9,13 +9,19 @@ from .agent import AgentID
 
 MapType = typing.TypeVar('MapType')
 
-@dataclasses.dataclass
+#@dataclasses.dataclass
 class Location:
-    #__slots__ = ['pos', 'map', 'state', 'agents']
+    __slots__ = ['pos', 'map', 'state', 'agents']
     pos: Position
     map: MapType
-    state: typing.Dict = dataclasses.field(default_factory=dict)
-    agents: typing.Set[AgentID] = dataclasses.field(default_factory=set)
+    state: typing.Dict
+    agents: typing.Set[AgentID]
+
+    def __init__(self, pos: Position, map: MapType, state: typing.Dict = None, agents: typing.Set[AgentID] = None):
+        self.pos = pos
+        self.map = map
+        self.state = state.copy() if state is not None else {}
+        self.agents = agents.copy() if agents is not None else set()
     
     ############################# Working With Agents #############################
     def add_agent(self, agent_id: AgentID):
@@ -30,11 +36,14 @@ class Location:
         '''Get agent by id.'''
         return self.agents[agent_id]
     
-    def __contains__(self, agent_id: AgentID):
-        '''Check if this location contains the agent.'''
-        return agent_id in self.agents
+
     
     ############################# Working With Resources #############################
     def __getitem__(self, key: typing.Any):
         '''Get a resource attribute.'''
         return self.state[key]
+    
+    def __contains__(self, agent_id: AgentID):
+        '''Check if this location contains the agent.'''
+        return agent_id in self.agents
+    

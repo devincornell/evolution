@@ -26,23 +26,27 @@ class MovementRuleViolationError(Exception):
     pass
 
 class HexMap:
-    def __init__(self, size_x: int, size_y: int, movement_rule: typing.Callable = None):
+    def __init__(self, radius: int, default_loc_state: typing.Dict = None, movement_rule: typing.Callable = None):
         '''
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
+        self.radius = radius
+        #if default_loc_state is None:
+        #    default_loc_state = dict()
+        #self.default_loc_state = default_loc_state
+
         self.locs: typing.Dict[CyHexPosition, Location] = dict()
         self.agent_pos: typing.Dict[AgentID, CyHexPosition] = dict()
         self.movement_rule = movement_rule
-        self.size_x = size_x
-        self.size_y = size_y
-        
-        for x, y in zip(list(range(size_x)), list(range(size_y))):
-            pos = CyHexPosition(x, y)
-            self.locs[pos] = Location(pos, self)
+        #self.size_x = size_x
+        #self.size_y = size_y
+
+        for pos in CyHexPosition(0, 0, 0).neighbors(radius):
+            self.locs[pos] = Location(pos, self, state=default_loc_state)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(size={self.size_x}x{self.size_y})'
+        return f'{self.__class__.__name__}(size={self.radius})'
     
     ############################# Working With Locations #############################
     def __getitem__(self, pos: CyHexPosition) -> Location:
@@ -54,21 +58,37 @@ class HexMap:
     
     def __contains__(self, agent_id: AgentID):
         return agent_id in self.agent_pos
+
+    def __iter__(self):
+        return iter(self.locs.values())
     
     def check_pos(self, pos: CyHexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''
-        if pos.x < 0 or pos.x >= self.size_x or pos.y < 0 or pos.y >= self.size_y:
+        if pos in self.locs:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
     def region(self, center: CyHexPosition, dist: int) -> np.ndarray:
         '''Get 2d array of squares within the given distance.'''
-        rng = list(range(-dist, dist+1))
-        x, y = center.x, center.y
-        return [self[CyHexPosition(x+xd,y+yd)] for xd in rng for yd in rng]
+        #rng = list(range(-dist, dist+1))
+        #x, y = center.x, center.y
+        #return [self[CyHexPosition(x+xd,y+yd)] for xd in rng for yd in rng]
+        return center.neighbors(dist) | set(self.locs.keys())
 
-    def region_locs(self, center: CyHexPosition, dist: int, **flatten_kwargs):
+    def region_locs(self, center: CyHexPosition, dist: int):
         '''Get sequence of locations in the given region.'''
         #return self.region(center, dist).flatten(**flatten_kwargs)
+        return [self[pos] for pos in self.region(center, dist)]
+
+    def get_loc_info(self) -> typing.List[dict]:
+        loc_states = list()
+        for pos, loc in self.locs.items():
+            q, r, s = pos.as_tuple()
+            loc_states.append({
+                'q': q, 'r': r, 's': s, 'x': pos.x, 'y': pos.y,
+                **loc.state,
+            })
+        return loc_states
+
     
     ############################# Working With Agents #############################
     def get_agent_pos(self, agent_id: AgentID) -> CyHexPosition:
