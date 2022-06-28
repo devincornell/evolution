@@ -54,6 +54,9 @@ cdef class CyHexPosition:
     def __repr__(self):
         #return f'{self.__class__.__name__}({self.q}, {self.r}, {self.s})'
         return f'{self.as_tuple()}'
+
+    def dist(self, other):
+        return self.cy_dist(other)
     
     cpdef float cy_dist(self, CyHexPosition other):
         '''Definition of distance metric for cube coordinates.'''
@@ -79,9 +82,14 @@ cdef class CyHexPosition:
         return sorted(self.neighbors(dist), key=lambda n: target.cy_dist(n))
 
 
-    def shortest_path_dfs(self, target, avoidset: set = None, verbose: bool = False):
+    def shortest_path_dfs(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
         '''Find shortest path using DFS.'''
-        #avoidset = avoidset.copy() # make a new copy of the avoidset
+        if max_dist is None:
+            max_dist = 1e9 # real big
+        
+        if self.cy_dist(target) > max_dist:
+            raise ValueError(f'Target {self}->{target} (dist={self.cy_dist(target)}) is outside maximum distance of {max_dist}.')
+
         avoidset = set(avoidset)
         visited = set([self])
         current_path: List[CyHexPosition] = [self]
@@ -99,7 +107,7 @@ cdef class CyHexPosition:
                     finished = True
                     break
                     #return current_path + [neighbor]
-                elif neighbor not in avoidset and neighbor not in visited:
+                elif neighbor not in avoidset and neighbor not in visited and self.cy_dist(neighbor) <= max_dist:
                     current_path.append(neighbor)
                     visited.add(neighbor)
                     found_next = True
@@ -111,18 +119,12 @@ cdef class CyHexPosition:
                 visited.add(neighbor)
                 current_path.pop()
 
+            if not len(current_path):
+                return None
+
             if verbose: print('--------------------------------\n')
             
         return current_path
-
-
-        step_iter = range(max_steps) if max_steps is not None else range()
-        for i in step_iter:
-            for neighbor in sorted(self.neighbors(1), key=lambda n: self.cy_dist(n)):
-                if neighbor == target:
-                    return [neighbor]
-                elif neighbor not in avoidsets[i]:
-                    current_path.append(neighbor)
 
     def shortest_path_recusrsive(self, target, avoidset: set = None, max_steps: int = None):
         if avoidset is None:

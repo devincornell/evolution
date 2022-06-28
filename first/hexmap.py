@@ -61,6 +61,9 @@ class HexMap:
 
     def __iter__(self):
         return iter(self.locs.values())
+
+    def positions(self) -> typing.Set[CyHexPosition]:
+        return set(self.locs.keys())
     
     def check_pos(self, pos: CyHexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''

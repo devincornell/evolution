@@ -1,16 +1,17 @@
 import numpy as np
 import first
+import random
 
 if __name__ == '__main__':
     #mm = first.ModelMap(10, 5)
     p = first.CyHexPosition(0, 0, 0)
-    #print(p.q)
-    p2 = first.CHPos(0, 0, 0)
-    #print(p2.q)
-#
-    #print(dir(p))
-    #print(dir(p2))
-    #exit()
+
+    radius = 5000
+    for n in p.neighbors(radius):
+        assert(p.cy_dist(n) <= radius)
+
+    exit()
+
 
     avoidset = set([
         first.CyHexPosition(-1, 1, 0),
@@ -30,6 +31,8 @@ if __name__ == '__main__':
     print(path)
 
     hmap = first.HexMap(5, {'blocked': False, 'passed': True})
+    positions = hmap.positions()
+    
     for loc in hmap:
         loc.state['blocked'] = loc.pos in avoidset
         loc.state['passed'] = loc.pos in pathset
