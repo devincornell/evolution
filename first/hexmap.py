@@ -32,17 +32,15 @@ class HexMap:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
         self.radius = radius
-        #if default_loc_state is None:
-        #    default_loc_state = dict()
-        #self.default_loc_state = default_loc_state
+        self.movement_rule = movement_rule
 
         self.locs: typing.Dict[CyHexPosition, Location] = dict()
         self.agent_pos: typing.Dict[AgentID, CyHexPosition] = dict()
-        self.movement_rule = movement_rule
-        #self.size_x = size_x
-        #self.size_y = size_y
 
-        for pos in CyHexPosition(0, 0, 0).neighbors(radius):
+        center = CyHexPosition(0, 0, 0)
+        valid_pos = center.neighbors(radius)
+        self.border_pos = center.neighbors(radius+1) - valid_pos
+        for pos in valid_pos:
             self.locs[pos] = Location(pos, self, state=default_loc_state)
 
     def __repr__(self):
