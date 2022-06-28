@@ -1,4 +1,5 @@
 import sys, pygame
+import time
 
 pygame.init()
 
@@ -29,3 +30,4 @@ while 1:
     screen.fill(black)
     screen.blit(ball, ballrect)
     pygame.display.flip()
+    time.sleep(1)
