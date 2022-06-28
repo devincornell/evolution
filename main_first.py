@@ -1,16 +1,10 @@
 import numpy as np
 import first
+import random
 
 if __name__ == '__main__':
     #mm = first.ModelMap(10, 5)
-    p = first.CyHexPosition(0, 0, 0)
-    #print(p.q)
-    p2 = first.CHPos(0, 0, 0)
-    #print(p2.q)
-#
-    #print(dir(p))
-    #print(dir(p2))
-    #exit()
+    start = first.CyHexPosition(0, 0, 0)
 
     avoidset = set([
         first.CyHexPosition(-1, 1, 0),
@@ -25,11 +19,13 @@ if __name__ == '__main__':
 
     target = first.CyHexPosition(-3, 4, -1)
 
-    path = p.shortest_path_dfs(target, avoidset)
+    path = start.shortest_path_dfs(target, avoidset)
     pathset = set(path)
     print(path)
 
     hmap = first.HexMap(5, {'blocked': False, 'passed': True})
+    positions = hmap.positions()
+    
     for loc in hmap:
         loc.state['blocked'] = loc.pos in avoidset
         loc.state['passed'] = loc.pos in pathset
@@ -38,9 +34,9 @@ if __name__ == '__main__':
     for ldata in loc_info:
         print(ldata)
 
-    import pickle
-    with open('tmp/tmp_loc_info.pic', 'wb') as f:
-        pickle.dump(loc_info, f)
+    import json
+    with open('tmp/example_sim.json', 'w') as f:
+        json.dump(loc_info, f)
 
     exit()
     for r in p.neighbors():
