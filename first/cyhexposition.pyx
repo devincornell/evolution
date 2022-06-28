@@ -126,33 +126,16 @@ cdef class CyHexPosition:
             
         return current_path
 
-    def shortest_path_recusrsive(self, target, avoidset: set = None, max_steps: int = None):
-        if avoidset is None:
-            avoidset = set()
-        visited = set([self])
-        shortest_path = list()
-
-        for neighbor in sorted(self.neighbors(1), key=lambda n: self.cy_dist(n)):
-            if neighbor == target:
-                return [neighbor]
-            else:
-                num_steps = max_steps-1 if max_steps is not None else None
-                shortest_path += neighbor.pathfind(target, avoidset | visited, num_steps)
-        
-
-        
-
-    def pathfind3(self, target, avoidset: set, steps: int):
-        '''Find shortest path between this position and the target, avoiding avoidset.'''
-        # https://www.redblobgames.com/grids/hexagons/#range
-        visited = set([self])
-        paths = {0: [self]}
-
-        for i in range(steps):
-            paths[i+1] = []
-            for pos in paths[i]:
-                for neighbor in pos.neighbors(1):
-                    if neighbor not in avoidset and neighbor not in visited:
-                        visited.add(neighbor)
-        return visited
-
+    #def shortest_path_bfs(self, target, avoidset: set = None, step_size: int = 3):
+    #    '''Shortest path by expanding search in stages.'''
+    #    visited = set([self])
+    #    fringe = self.get_fringe(visited)
+    #    if target in fringe:
+    #        return target
+    
+    cdef set get_fringe(self, set others, dist: int = 1):
+        '''Get positions on the fringe of the provided nodes.'''
+        fringe = set()
+        for pos in others:
+            fringe |= pos.neighbors(1)
+        return fringe - others
