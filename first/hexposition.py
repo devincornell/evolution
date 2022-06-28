@@ -2,19 +2,9 @@ import itertools
 import math
 import dataclasses
 
-
-hex_directions = (
-    (1, -1, 0), # top-right
-    (1, 0, -1), # right
-    (0, 1, -1), # bottom-right
-    (-1, 1, 0), # bottom-left
-    (-1, 0, 1), # left
-    (0, -1, 1), # top-left
-)
-
 @dataclasses.dataclass
 class HexPosition:
-    #__slots__ = ['q', 'r', 's']
+    __slots__ = ['q', 'r', 's']
     q: int
     r: int
     s: int
@@ -47,5 +37,11 @@ class HexPosition:
         rng = list(range(-dist, dist + 1))
         return [self.offset(q,r,s) for q,r,s in itertools.product(rng,rng,rng) if (q+r+s)==0]
 
-
+    def neighbors(self, dist: int) -> list:
+        positions = list()
+        for q in range(-dist, dist+1):
+            for r in range(max(-dist, -q-dist), 1+min(dist, -q+dist)):
+                s = -q - r
+                positions.append(self.offset(q,r,s))
+        return positions
 

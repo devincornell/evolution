@@ -3,12 +3,14 @@ import first
 
 if __name__ == '__main__':
     #mm = first.ModelMap(10, 5)
-    p = first.HexPosition(0, 0, 0)
+    p = first.CyHexPosition(0, 0, 0)
     print(p)
     
-    for r in p.region(1):
+    for r in p.neighbors():
         print(r)
-    
+        
+    path = p.pathfind(first.CyHexPosition(-1, 0, 1), set(), 5)
+    print(path)
     #center = first.Position(0,0)
     
     #print(mm.locs)

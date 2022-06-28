@@ -1,8 +1,7 @@
-from .numpymodelmap import *
+#from .numpymodelmap import *
 from .location import *
-from .position import *
-from .modelmap import *
-from .hexgrid import *
-from .hexposition import *
-from .cyhexposition import *
+from .hexmap import HexMap
 
+from .agent import Agent, AgentID
+from .cyhexposition import CyHexPosition
+from .hexposition import HexPosition

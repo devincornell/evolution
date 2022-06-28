@@ -10,7 +10,8 @@ import numpy as np
 from .agent import Agent, AgentID
 
 from .location import Location
-from .position import Position
+#from .position import Position
+from .cyhexposition import CyHexPosition
 
 class AgentExistsError(Exception):
     pass
@@ -24,27 +25,27 @@ class OutOfBoundsError(Exception):
 class MovementRuleViolationError(Exception):
     pass
 
-class ModelMap:
+class HexMap:
     def __init__(self, size_x: int, size_y: int, movement_rule: typing.Callable = None):
         '''
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
-        self.locs: typing.Dict[Position, Location] = dict()
-        self.agent_pos: typing.Dict[AgentID, Position] = dict()
+        self.locs: typing.Dict[CyHexPosition, Location] = dict()
+        self.agent_pos: typing.Dict[AgentID, CyHexPosition] = dict()
         self.movement_rule = movement_rule
         self.size_x = size_x
         self.size_y = size_y
         
         for x, y in zip(list(range(size_x)), list(range(size_y))):
-            pos = Position(x, y)
+            pos = CyHexPosition(x, y)
             self.locs[pos] = Location(pos, self)
 
     def __repr__(self):
         return f'{self.__class__.__name__}(size={self.size_x}x{self.size_y})'
     
     ############################# Working With Locations #############################
-    def __getitem__(self, pos: Position) -> Location:
+    def __getitem__(self, pos: CyHexPosition) -> Location:
         '''Get location at desired position.'''
         try:
             return self.locs[pos]
@@ -54,23 +55,23 @@ class ModelMap:
     def __contains__(self, agent_id: AgentID):
         return agent_id in self.agent_pos
     
-    def check_pos(self, pos: Position) -> None:
+    def check_pos(self, pos: CyHexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''
         if pos.x < 0 or pos.x >= self.size_x or pos.y < 0 or pos.y >= self.size_y:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
-    def region(self, center: Position, dist: int) -> np.ndarray:
+    def region(self, center: CyHexPosition, dist: int) -> np.ndarray:
         '''Get 2d array of squares within the given distance.'''
         rng = list(range(-dist, dist+1))
         x, y = center.x, center.y
-        return [self[Position(x+xd,y+yd)] for xd in rng for yd in rng]
+        return [self[CyHexPosition(x+xd,y+yd)] for xd in rng for yd in rng]
 
-    def region_locs(self, center: Position, dist: int, **flatten_kwargs):
+    def region_locs(self, center: CyHexPosition, dist: int, **flatten_kwargs):
         '''Get sequence of locations in the given region.'''
         #return self.region(center, dist).flatten(**flatten_kwargs)
     
     ############################# Working With Agents #############################
-    def get_agent_pos(self, agent_id: AgentID) -> Position:
+    def get_agent_pos(self, agent_id: AgentID) -> CyHexPosition:
         '''Get position of the provided agent.'''
         try:
             return self.agent_pos[agent_id]
@@ -81,7 +82,7 @@ class ModelMap:
         '''Get the location object associated with teh agent.'''
         return self.get_loc(self.get_agent_pos(agent_id))
         
-    def add_agent(self, agent_id: AgentID, pos: Position):
+    def add_agent(self, agent_id: AgentID, pos: CyHexPosition):
         '''Add the agent to the map.'''
         self.check_pos(pos)
         if agent_id in self.agent_pos:
@@ -95,7 +96,7 @@ class ModelMap:
         loc.agents.remove(agent_id)
         del self.agent_pos[agent_id]
         
-    def move_agent(self, agent_id: int, agent: Agent, new_pos: Position):
+    def move_agent(self, agent_id: int, agent: Agent, new_pos: CyHexPosition):
         '''Move the agent to a new location after checking rule.
         '''        
         old_loc = self.get_agent_loc(agent_id)

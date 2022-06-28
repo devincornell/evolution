@@ -11,7 +11,7 @@ MapType = typing.TypeVar('MapType')
 
 @dataclasses.dataclass
 class Location:
-    #__slots__ = ['pos', 'map', 'resource', 'agent']
+    #__slots__ = ['pos', 'map', 'state', 'agents']
     pos: Position
     map: MapType
     state: typing.Dict = dataclasses.field(default_factory=dict)

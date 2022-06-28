@@ -8,11 +8,11 @@ import itertools
 from .agent import Agent, AgentID
 
 from .location import Location
-from .position import Position
+from .cyhexposition import CyHexPosition
 
 
 class HexGrid:
-    locs: typing.Dict[Position, Location] = dict()
+    locs: typing.Dict[CyHexPosition, Location] = dict()
 
     def __init__(self, size: int):
         self.size = size
