@@ -39,11 +39,11 @@ cdef class CyHexPosition:
 
     @property
     def x(self):
-        return self.q + (self.r + (self.r & 1))/2
+        return self.q# + (self.r + (self.r & 1))/2
 
     @property
     def y(self):
-        return self.r
+        return self.r + (self.q + (self.q&1)) / 2
 
     def as_tuple(self):
         return (self.q, self.r, self.s)
