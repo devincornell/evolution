@@ -4,7 +4,8 @@ import math
 import json
 
 class HexDrawer:
-    def __init__(self, sim_fname: str, screen_w: int, screen_h: int):
+    def __init__(self, sim_fname: str, screen_w: int, screen_h: int, draw_text: bool = True):
+        self.draw_text = draw_text
 
         with open(sim_fname, 'r') as f:
             self.hex_info = json.load(f)
@@ -15,8 +16,8 @@ class HexDrawer:
         ymin = min(h['y'] for h in self.hex_info)
 
         # size calculations
-        screen_w = screen_w / 0.85
-        screen_h = screen_h * 0.8
+        screen_w = screen_w / 0.9
+        screen_h = screen_h * 0.95
         self.x_offset = xmin
         self.y_offset = ymin
         self.hex_w = screen_w / (xmax-xmin)
@@ -25,12 +26,16 @@ class HexDrawer:
         self.y_displace = self.hex_h
 
         # load images and scale them
-        self.img_red = self.load_and_scale('images/hexagon_small_lava.png')
-        self.img_blue = self.load_and_scale('images/hexagon_water.png')
-        self.img_green = self.load_and_scale('images/hexagon_grassey.png')
+        self.img_background = self.load_and_scale('images/hexagon_beach.png')
+        self.img_blocked = self.load_and_scale('images/hexagon_bigrocks.png')
+        
+        self.img_route = self.load_and_scale('images/hexagon_valley.png')
+        self.img_start = self.load_and_scale('images/hexagon_grassey.png')
+        self.img_end = self.load_and_scale('images/hexagon_far_lava.png')
 
         #font = pygame.font.Font('freesansbold.ttf', 32)
         #text = font.render('GeeksForGeeks', True, green, blue)
+        self.font = pygame.font.SysFont(None, 24)
 
     def load_and_scale(self, img_fname: str):
         img = pygame.image.load(img_fname)
@@ -48,12 +53,26 @@ class HexDrawer:
         #for x,y in itertools.product(list(range(self.)))
         for hi in self.hex_info:
             pos = self.map_coords(hi['x'], hi['y'])
+            center = pos[0] + self.hex_w/2, pos[1] + self.hex_h/2
+
             
             #print(f'drawing at {pos}')
             if hi['blocked']:
-                screen.blit(self.img_red, pos)
+                screen.blit(self.img_blocked, pos)
+            elif hi['start']:
+                screen.blit(self.img_start, pos)
+            elif hi['end']:
+                screen.blit(self.img_end, pos)
             elif hi['passed']:
-                screen.blit(self.img_green, pos)
+                screen.blit(self.img_route, pos)
             else:
-                screen.blit(self.img_blue, pos)
+                screen.blit(self.img_background, pos)
 
+            if self.draw_text:
+                text_img = self.font.render(f'{hi["q"]}, {hi["r"]}, {hi["s"]} / {int(hi["x"])}, {int(hi["y"])}', True, (0,0,0))
+                text_w = self.hex_w/2
+
+                text_pos = center[0] - text_img.get_width()/2, center[1] - text_img.get_height()/2
+
+
+                screen.blit(text_img, text_pos)
