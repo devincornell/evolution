@@ -39,6 +39,7 @@ class HexMap:
 
         center = CyHexPosition(0, 0, 0)
         valid_pos = center.neighbors(radius)
+        valid_pos.add(center)
         self.border_pos = center.neighbors(radius+1) - valid_pos
         for pos in valid_pos:
             self.locs[pos] = Location(pos, self, state=default_loc_state)

@@ -4,19 +4,20 @@ all: build docs
 run: clean build
 	python main_first.py
 
+rebuild: clean build
+
 build: 
 	python setup.py build_ext --inplace
 
 docs: 
 	-mkdir docs
-	-cython -a first/*.pyx
-	-mv first/*.html docs
+	-cython -a mase/*.pyx
+	-mv mase/*.html docs
 
 clean: 
 	-rm -r build
 	-rm -r docs
-	-rm first/*.so
-	-rm first/*.c
-	-rm first/*.cpp
+	-rm mase/*.so
+	-rm mase/*.c
+	-rm mase/*.cpp
 	
-

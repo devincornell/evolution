@@ -3,7 +3,7 @@ import random
 
 from .hexmap import HexMap
 
-def random_map(map_size: int, seed: int = 0):
+def random_walk(map_size: int, seed: int = 0, include_path: bool = True):
     hmap = HexMap(map_size)
     
     all_positions = hmap.positions()
@@ -11,14 +11,22 @@ def random_map(map_size: int, seed: int = 0):
     # random sampling for start, end, and blocks
     random.seed(seed)
     avoidset = set(random.sample(all_positions, len(all_positions) // 4))
-    start = random.choice(list(all_positions))
-    end = start
-    while end == start:
-        end = random.choice(list(all_positions))
     
-    path = start.shortest_path_dfs(end, avoidset, 2*map_size)
+    start = random.choice(list(all_positions - avoidset))
+    end = random.choice(list(all_positions - avoidset - set([start])))
     
-    return start, end, avoidset
+    if include_path:
+        path = start.shortest_path_dfs(end, avoidset, 2*map_size)
+        pathset = set(path)
+        for loc in hmap:
+            loc.state['start'] = loc.pos == start
+            loc.state['end'] = loc.pos == end
+            loc.state['passed'] = loc.pos in pathset
+            loc.state['blocked'] = loc.pos in avoidset
+
+    loc_info = hmap.get_loc_info()
+
+    return loc_info
 
 def run_test(map_size: int, num_runs: int):
     hmap = HexMap(map_size)

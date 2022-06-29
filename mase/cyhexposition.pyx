@@ -49,7 +49,8 @@ cdef class CyHexPosition:
         return (self.q, self.r, self.s)
 
     def __eq__(self, other):
-        return self.__hash__() == other.__hash__()
+        #return self.q == other.q and self.r == other.r and self.s == other.s
+        return self.as_tuple() == other.as_tuple()
 
     def __repr__(self):
         #return f'{self.__class__.__name__}({self.q}, {self.r}, {self.s})'
@@ -69,12 +70,16 @@ cdef class CyHexPosition:
     def neighbors(self, dist: int = 1) -> set:
         '''Get neighborhood within a given distance.'''
         cdef int q, r, s
+        cts = 0
         positions = set()
         for q in range(-dist, dist+1):
             for r in range(max(-dist, -q-dist), 1+min(dist, -q+dist)):
                 s = -q - r
+                #print(q, r, s)
                 if not (q == 0 and r == 0):
+                    cts += 1
                     positions.add(self.get_offset(q,r,s))
+        print('final:', cts, len(positions))
         return positions
 
     def sorted_neighbors(self, target, dist: int = 1):
