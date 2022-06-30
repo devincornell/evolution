@@ -8,13 +8,10 @@ import math
 #import dataclasses
 from libcpp.set cimport set as cpp_set
 #cimport libcpp.set.set
-
+from .errors import *
 #from libc.math cimport sin
 
 import time
-
-class TargetInAvoidSet(Exception):
-    pass
 
 
 #@dataclasses.dataclass
@@ -43,30 +40,23 @@ cdef class CyHexPosition:
     def y(self):
         return self.r + (self.q + (self.q&1)) / 2
 
-    def as_tuple(self):
+    def coords(self):
         return (self.q, self.r, self.s)
 
     def __eq__(self, other):
         #return self.q == other.q and self.r == other.r and self.s == other.s
-        return self.as_tuple() == other.as_tuple()
+        return self.coords() == other.coords()
 
     def __repr__(self):
         #return f'{self.__class__.__name__}({self.q}, {self.r}, {self.s})'
-        return f'{self.as_tuple()}'
+        return f'{self.coords()}'
 
     def dist(self, other):
         return self.cy_dist(other)
-    
-    cpdef float cy_dist(self, CyHexPosition other):
-        '''Definition of distance metric for cube coordinates.'''
-        return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
 
     def offset(self, offset_q: int, offset_r: int, offset_s: int):
         '''Get a new object with the specified offset coordinates.'''
         return self.__class__(self.q+offset_q, self.r+offset_r, self.s+offset_s)
-
-    cdef CyHexPosition cy_offset(self, int delta_q, int delta_r, int delta_s):
-        return CyHexPosition(self.q+delta_q, self.r+delta_r, self.s+delta_s)
 
     def neighbors(self, dist: int = 1) -> set:
         '''Get neighborhood within a given distance.'''
@@ -101,7 +91,6 @@ cdef class CyHexPosition:
         finished = False
         while not finished:
             if verbose: print(f'status: {current_path}, {visited}')
-            if verbose: time.sleep(5)
             found_next = False
             for neighbor in current_path[-1].sorted_neighbors(target):
                 if neighbor == target:
@@ -130,13 +119,6 @@ cdef class CyHexPosition:
             
         return current_path
 
-    #def shortest_path_bfs(self, target, avoidset: set = None, step_size: int = 3):
-    #    '''Shortest path by expanding search in stages.'''
-    #    visited = set([self])
-    #    fringe = self.get_fringe(visited)
-    #    if target in fringe:
-    #        return target
-
     def shortest_path_length(self, target, avoidset: set) -> int:
         '''Calculate number of steps required to reach target.'''
         if target in avoidset:
@@ -157,6 +139,13 @@ cdef class CyHexPosition:
     
     def fringe(self, others: set, dist: int = 1) -> set:
         return self.cy_fringe(others, dist)
+
+    cdef CyHexPosition cy_offset(self, int delta_q, int delta_r, int delta_s):
+        return CyHexPosition(self.q+delta_q, self.r+delta_r, self.s+delta_s)
+
+    cpdef float cy_dist(self, CyHexPosition other):
+        '''Definition of distance metric for cube coordinates.'''
+        return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
 
     cdef set cy_fringe(self, set others, int dist = 1):
         '''Get positions on the fringe of the provided nodes.'''

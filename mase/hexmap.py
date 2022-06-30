@@ -9,23 +9,82 @@ import numpy as np
 #from first.agentid import AgentID
 from .agentstate import AgentState, AgentID
 
-from .location import Location
+from .location import Location, LocationView
 #from .position import Position
 from .cyhexposition import CyHexPosition
+from .errors import *
 
-class AgentExistsError(Exception):
-    pass
+# used for basehexmap where the types of interfaces are different
+Position = CyHexPosition
 
-class AgentDoesNotExistError(Exception):
-    pass
+class BaseHexMap:
+    '''Methods that appear in both view and full map.'''
+    
+    ############################# Working With Locations #############################
+    def __getitem__(self, pos: Position) -> Location:
+        '''Get location at desired position.'''
+        try:
+            return self.locs[pos]
+        except KeyError:
+            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
+    
+    def __iter__(self):
+        return iter(self.locs.values())
 
-class OutOfBoundsError(Exception):
-    pass
+    def positions(self) -> typing.Set[Position]:
+        return set(self.locs.keys())
+    
+    def check_pos(self, pos: Position) -> None:
+        '''Check if position is within map, otherwise raise exception.'''
+        if pos in self.locs:
+            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
+    
+    def region(self, center: Position, dist: int) -> set:
+        '''Get sequence of positions within the given distance.'''
+        return center.neighbors(dist) | set(self.locs.keys())
 
-class MovementRuleViolationError(Exception):
-    pass
+    def region_locs(self, center: Position, dist: int) -> list:
+        '''Get sequence of locations in the given region.'''
+        return [self[pos] for pos in self.region(center, dist)]
+    
+    ############################# Working With Agents #############################
+    def __contains__(self, agent_id: AgentID):
+        '''Check if the agent is on the map.'''
+        return agent_id in self.agent_pos
+    
+    def get_agent_pos(self, agent_id: AgentID):
+        '''Get position of the provided agent.'''
+        try:
+            return self.agent_pos[agent_id]
+        except KeyError:
+            raise AgentDoesNotExistError('This agent does not exist on the map.')
 
-class HexMap:
+    def get_agent_loc(self, agent_id: AgentID) -> Location:
+        '''Get the location object associated with teh agent.'''
+        return self.get_loc(self.get_agent_pos(agent_id))
+    
+    ############################# Other Helpers #############################
+    def get_loc_info(self) -> typing.List[dict]:
+        '''Get dictionary information about each location.'''
+        loc_states = list()
+        for pos, loc in self.locs.items():
+            q, r, s = pos.coords()
+            loc_states.append({
+                'q': q, 'r': r, 's': s, 'x': pos.x, 'y': pos.y,
+                **loc.state,
+            })
+        return loc_states
+    
+@dataclasses.dataclass
+class HexMapView(BaseHexMap):
+    __slots__ = ['locs', 'agent_pos']
+    locs: typing.Dict[typing.Tuple, LocationView]
+    agent_pos: typing.Dict[AgentID, typing.Tuple]
+
+class HexMap(BaseHexMap):
+    locs: typing.Dict[CyHexPosition, Location]
+    agent_pos: typing.Dict[AgentID, CyHexPosition]
+    
     def __init__(self, radius: int, default_loc_state: typing.Dict = None, movement_rule: typing.Callable = None):
         '''
         Args:
@@ -34,8 +93,8 @@ class HexMap:
         self.radius = radius
         self.movement_rule = movement_rule
 
-        self.locs: typing.Dict[CyHexPosition, Location] = dict()
-        self.agent_pos: typing.Dict[AgentID, CyHexPosition] = dict()
+        self.locs = dict()
+        self.agent_pos = dict()
 
         center = CyHexPosition(0, 0, 0)
         valid_pos = center.neighbors(radius)
@@ -47,63 +106,15 @@ class HexMap:
     def __repr__(self):
         return f'{self.__class__.__name__}(size={self.radius})'
     
-    ############################# Working With Locations #############################
-    def __getitem__(self, pos: CyHexPosition) -> Location:
-        '''Get location at desired position.'''
-        try:
-            return self.locs[pos]
-        except KeyError:
-            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
-    def __contains__(self, agent_id: AgentID):
-        return agent_id in self.agent_pos
-
-    def __iter__(self):
-        return iter(self.locs.values())
-
-    def positions(self) -> typing.Set[CyHexPosition]:
-        return set(self.locs.keys())
+    ############################# Views #############################    
+    def get_view(self):
+        '''Create a view that the user cannot modify.'''
+        locs = {pos.coords():loc.get_view() for pos,loc in self.locs.items()}
+        agent_pos = {aid:pos.coords() for aid,pos in self.agent_pos.items()}
+        return HexMapView(locs=locs, agent_pos=agent_pos)
     
-    def check_pos(self, pos: CyHexPosition) -> None:
-        '''Check if position is within map, otherwise raise exception.'''
-        if pos in self.locs:
-            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
-    
-    def region(self, center: CyHexPosition, dist: int) -> np.ndarray:
-        '''Get 2d array of squares within the given distance.'''
-        #rng = list(range(-dist, dist+1))
-        #x, y = center.x, center.y
-        #return [self[CyHexPosition(x+xd,y+yd)] for xd in rng for yd in rng]
-        return center.neighbors(dist) | set(self.locs.keys())
-
-    def region_locs(self, center: CyHexPosition, dist: int):
-        '''Get sequence of locations in the given region.'''
-        #return self.region(center, dist).flatten(**flatten_kwargs)
-        return [self[pos] for pos in self.region(center, dist)]
-
-    def get_loc_info(self) -> typing.List[dict]:
-        loc_states = list()
-        for pos, loc in self.locs.items():
-            q, r, s = pos.as_tuple()
-            loc_states.append({
-                'q': q, 'r': r, 's': s, 'x': pos.x, 'y': pos.y,
-                **loc.state,
-            })
-        return loc_states
-
-    
-    ############################# Working With Agents #############################
-    def get_agent_pos(self, agent_id: AgentID) -> CyHexPosition:
-        '''Get position of the provided agent.'''
-        try:
-            return self.agent_pos[agent_id]
-        except KeyError:
-            raise AgentDoesNotExistError('This agent does not exist on the map.')
-
-    def get_agent_loc(self, agent_id: AgentID) -> Location:
-        '''Get the location object associated with teh agent.'''
-        return self.get_loc(self.get_agent_pos(agent_id))
-        
+    ############################# Working With Agents #############################    
     def add_agent(self, agent_id: AgentID, pos: CyHexPosition):
         '''Add the agent to the map.'''
         self.check_pos(pos)

@@ -4,7 +4,7 @@ all: build docs
 run: clean build
 	python main_first.py
 
-rebuild: clean build
+rebuild: clean build docs
 
 build: 
 	python setup.py build_ext --inplace
