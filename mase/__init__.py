@@ -2,7 +2,7 @@
 from .location import *
 from .hexmap import HexMap
 
-from .agent import Agent, AgentID
-from .cyhexposition import CyHexPosition, CHPos
+from .agentstate import AgentState, AgentID
+from .cyhexposition import CyHexPosition
 from .hexposition import HexPosition
-from .hexmapgenerator import random_walk
+from .hexmapgenerator import *

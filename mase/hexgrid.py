@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 
 #from first.agentid import AgentID
-from .agent import Agent, AgentID
+from .agentstate import AgentState, AgentID
 
 from .location import Location
 from .cyhexposition import CyHexPosition

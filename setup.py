@@ -5,6 +5,6 @@ import glob
 
 
 setup(
-    name='first_model', 
+    name='mase', 
     ext_modules = cythonize(["mase/*.pyx"], language_level = "3", language="c++")
 )

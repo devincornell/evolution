@@ -5,7 +5,7 @@ import typing
 #from .resource import Resource
 #from .agent import Agent
 from .position import Position
-from .agent import AgentID
+from .agentstate import AgentID
 
 MapType = typing.TypeVar('MapType')
 

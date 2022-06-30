@@ -1,22 +1,20 @@
+# distutils: language = c++
+
+#%%cython
+
+
 #import itertools
 import math
 #import dataclasses
-
+from libcpp.set cimport set as cpp_set
+#cimport libcpp.set.set
 
 #from libc.math cimport sin
 
 import time
 
-cdef class CHPos:
-    # implemented mostly using this blog
-    # https://www.redblobgames.com/grids/hexagons/#neighbors
-    cdef int q
-    cdef int r
-    cdef int s
-    def __init__(self, q: int, r: int, s: int):
-        self.q = q
-        self.r = r
-        self.s = s
+class TargetInAvoidSet(Exception):
+    pass
 
 
 #@dataclasses.dataclass
@@ -63,32 +61,33 @@ cdef class CyHexPosition:
         '''Definition of distance metric for cube coordinates.'''
         return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
 
-    def get_offset(self, offset_q: int, offset_r: int, offset_s: int):
+    def offset(self, offset_q: int, offset_r: int, offset_s: int):
         '''Get a new object with the specified offset coordinates.'''
         return self.__class__(self.q+offset_q, self.r+offset_r, self.s+offset_s)
+
+    cdef CyHexPosition cy_offset(self, int delta_q, int delta_r, int delta_s):
+        return CyHexPosition(self.q+delta_q, self.r+delta_r, self.s+delta_s)
 
     def neighbors(self, dist: int = 1) -> set:
         '''Get neighborhood within a given distance.'''
         cdef int q, r, s
-        cts = 0
         positions = set()
         for q in range(-dist, dist+1):
             for r in range(max(-dist, -q-dist), 1+min(dist, -q+dist)):
                 s = -q - r
-                #print(q, r, s)
                 if not (q == 0 and r == 0):
-                    cts += 1
-                    positions.add(self.get_offset(q,r,s))
-        print('final:', cts, len(positions))
+                    positions.add(self.cy_offset(q,r,s))
         return positions
 
     def sorted_neighbors(self, target, dist: int = 1):
         '''Return direct neighbors sorted by distance from target.'''
         return sorted(self.neighbors(dist), key=lambda n: target.cy_dist(n))
 
-
-    def shortest_path_dfs(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
-        '''Find shortest path using DFS.'''
+    def pathfind_dfs(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
+        '''Heuristic-based pathfinder. May not be shortest path.'''
+        if target in avoidset:
+            raise TargetInAvoidSet(f'Target {target} was found in avoidset.')
+        
         if max_dist is None:
             max_dist = 1e9 # real big
         
@@ -137,10 +136,34 @@ cdef class CyHexPosition:
     #    fringe = self.get_fringe(visited)
     #    if target in fringe:
     #        return target
+
+    def shortest_path_length(self, target, avoidset: set) -> int:
+        '''Calculate number of steps required to reach target.'''
+        if target in avoidset:
+            raise TargetInAvoidSet(f'Target {target} was found in avoidset.')
+        
+        cdef int ct = 0
+        visited = set([self])
+        while True:
+            fringe = self.cy_fringe(visited) - avoidset
+            ct += 1
+            if target in fringe:
+                ct += 1
+                return ct
+            elif not len(fringe):
+                return None
+            else:
+                visited |= fringe
     
-    cdef set get_fringe(self, set others, dist: int = 1):
+    def fringe(self, others: set, dist: int = 1) -> set:
+        return self.cy_fringe(others, dist)
+
+    cdef set cy_fringe(self, set others, int dist = 1):
         '''Get positions on the fringe of the provided nodes.'''
+        others = others | set([self])
         fringe = set()
         for pos in others:
-            fringe |= pos.neighbors(1)
+            fringe |= pos.neighbors(dist)
         return fringe - others
+
+

@@ -7,7 +7,7 @@ import typing
 import numpy as np
 
 #from first.agentid import AgentID
-from .agent import Agent, AgentID
+from .agentstate import AgentState, AgentID
 
 from .location import Location
 from .position import Position
@@ -107,7 +107,7 @@ class NumpyModelMap:
         loc.agents.remove(agent_id)
         del self.agent_pos[agent_id]
         
-    def move_agent(self, agent_id: int, agent: Agent, new_pos: Position):
+    def move_agent(self, agent_id: int, agent: AgentState, new_pos: Position):
         '''Move the agent to a new location after checking rule.
         '''        
         old_loc = self.get_agent_loc(agent_id)
