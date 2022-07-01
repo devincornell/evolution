@@ -34,6 +34,9 @@ class BaseHexMap:
     def positions(self) -> typing.Set[Position]:
         return set(self.locs.keys())
     
+    def locations(self) -> typing.List[Position]:
+        return list(self.locs.values())
+    
     def check_pos(self, pos: Position) -> None:
         '''Check if position is within map, otherwise raise exception.'''
         if pos in self.locs:
@@ -66,20 +69,29 @@ class BaseHexMap:
     ############################# Other Helpers #############################
     def get_loc_info(self) -> typing.List[dict]:
         '''Get dictionary information about each location.'''
-        loc_states = list()
-        for pos, loc in self.locs.items():
-            q, r, s = pos.coords()
-            loc_states.append({
-                'q': q, 'r': r, 's': s, 'x': pos.x, 'y': pos.y,
-                **loc.state,
-            })
-        return loc_states
+        return [loc.get_info() for loc in self.locs.values()]
     
 @dataclasses.dataclass
 class HexMapView(BaseHexMap):
     __slots__ = ['locs', 'agent_pos']
     locs: typing.Dict[typing.Tuple, LocationView]
     agent_pos: typing.Dict[AgentID, typing.Tuple]
+    
+    def pathfind_dfs(self, source: tuple, target: tuple, avoid_positions: typing.Set[tuple]):
+        '''Find the first path from source to target using dfs.
+        Args:
+            avoid_positions: set of positions to avoid when pathfinding.
+        '''
+        avoidset = {CyHexPosition(*pos) for pos in avoid_positions}
+        source_pos, target_pos = CyHexPosition(source), CyHexPosition(target)
+        return source_pos.pathfind_dfs(target, avoidset)
+        
+    def nearest_agents(self, position: tuple):
+        '''Get agents nearest to the provided position.'''
+        target = CyHexPosition(*position)
+        sortkey = lambda pos: target.dist(pos)
+        return list(sorted([aid for aid, pos in self.agent_pos.items()], key=sortkey))
+        
 
 class HexMap(BaseHexMap):
     locs: typing.Dict[CyHexPosition, Location]
