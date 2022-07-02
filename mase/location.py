@@ -4,7 +4,7 @@ import typing
 import copy
 
 #from .position import Position
-from .cyhexposition import CyHexPosition
+from .position import CyHexPosition
 from .agentstatepool import AgentID
 
 MapType = typing.TypeVar('MapType')

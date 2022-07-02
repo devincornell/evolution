@@ -2,10 +2,10 @@
 import random
 
 from .hexmap import HexMap
-from .cyhexposition import CyHexPosition
+from .position import CyHexPosition
 
-def random_target_map(map_size: int, seed: int = 0, percent_avoid: float = 0.25):
-    center = CyHexPosition(0,0,0)
+def random_pathfind_positions(map_size: int, PositionType: type = CyHexPosition, seed: int = 0, percent_avoid: float = 0.25):
+    center = PositionType(0,0,0)
     all_positions = center.neighbors(map_size)
 
     # random sampling for start, end, and blocks

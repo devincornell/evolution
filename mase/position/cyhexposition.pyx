@@ -131,7 +131,7 @@ cdef class CyHexPosition:
             fringe = self.cy_fringe(visited) - avoidset
             ct += 1
             if target in fringe:
-                ct += 1
+                #ct += 1
                 return ct
             elif not len(fringe):
                 return None

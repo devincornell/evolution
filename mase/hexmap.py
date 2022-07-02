@@ -11,7 +11,7 @@ from .agentstatepool import AgentState, AgentID
 
 from .location import Location, LocationView, LocationState
 #from .position import Position
-from .cyhexposition import CyHexPosition
+from .position import CyHexPosition
 from .errors import *
 
 # used for basehexmap where the types of interfaces are different

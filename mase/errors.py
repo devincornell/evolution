@@ -11,6 +11,5 @@ class OutOfBoundsError(Exception):
 class MovementRuleViolationError(Exception):
     pass
 
-class TargetInAvoidSet(Exception):
-    pass
+
 
