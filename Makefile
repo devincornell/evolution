@@ -11,13 +11,14 @@ build:
 
 docs: 
 	-mkdir docs
-	-cython -a mase/*.pyx
-	-mv mase/*.html docs
+	-cython -a mase/position/*.pyx
+	-mkdir mase/position/docs/
+	-mv mase/position/*.html mase/position/docs/
 
 clean: 
 	-rm -r build
 	-rm -r docs
-	-rm mase/*.so
-	-rm mase/*.c
-	-rm mase/*.cpp
+	-rm mase/position/*.so
+	-rm mase/position/*.c
+	-rm mase/position/*.cpp
 	
