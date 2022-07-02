@@ -24,13 +24,22 @@ def test_neighbors(PositionType):
 
 def test_pathfind(PositionType):
     for map_size in range(2, 30):
-        for _ in range(20):
-            start, target, avoidset = mase.hexmapgenerator.random_pathfind_positions(map_size, PositionType)
+        for seed in range(20):
+            start, target, avoidset = mase.hexmapgenerator.random_pathfind_positions(map_size, PositionType, seed=seed)
             sp_len = start.shortest_path_length(target, avoidset)
             found_path = start.pathfind_dfs(target, avoidset)
-            #print(len(found_path)-1, sp_len)
-            assert(len(found_path)-1 >= sp_len)
-            #print(len(found_path) - sp_len)
+            
+            if sp_len is None:
+                assert(found_path is None)
+            else:
+                assert(len(found_path)-1 >= sp_len)
+                assert(not len(set(found_path) & avoidset))
+                
+                prev = found_path[0]
+                for pos in found_path[1:]:
+                    assert(pos.dist(prev) == 1)
+                    prev = pos
+                
 
     
 

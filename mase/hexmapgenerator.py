@@ -2,9 +2,9 @@
 import random
 
 from .hexmap import HexMap
-from .position import CyHexPosition
+from .position import HexPosition
 
-def random_pathfind_positions(map_size: int, PositionType: type = CyHexPosition, seed: int = 0, percent_avoid: float = 0.25):
+def random_pathfind_positions(map_size: int, PositionType: type = HexPosition, seed: int = 0, percent_avoid: float = 0.25):
     center = PositionType(0,0,0)
     all_positions = center.neighbors(map_size)
 
