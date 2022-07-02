@@ -28,7 +28,7 @@ def test_pathfind():
             start, target, avoidset = mase.hexmapgenerator.random_target_map(map_size)
             sp_len = start.shortest_path_length(target, avoidset)
             found_path = start.pathfind_dfs(target, avoidset)
-            assert(len(found_path) >= sp_len)
+            assert((len(found_path) - 1) >= sp_len)
             #print(len(found_path) - sp_len)
 
     
