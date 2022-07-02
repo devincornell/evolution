@@ -5,7 +5,7 @@ import copy
 
 #from .position import Position
 from .cyhexposition import CyHexPosition
-from .agentstate import AgentID
+from .agentstatepool import AgentID
 
 MapType = typing.TypeVar('MapType')
 
@@ -49,14 +49,14 @@ class Location(BaseLocation):
     def __init__(self, pos: CyHexPosition, map: MapType, state: typing.Dict = None, agents: typing.Set[AgentID] = None):
         self.pos = pos
         self.map = map
-        self.state = state.copy() if state is not None else {}
-        self.agents = agents.copy() if agents is not None else set()
+        self.state = copy.copy(state) if state is not None else {}
+        self.agents = copy.copy(agents) if agents is not None else set()
         
     ############################# Utility #############################
     def get_view(self) -> LocationView:
         '''Get a view of the current location without any methods.'''
         # use deepcopy on state since the game might deside that
-        return LocationView(self.pos.coords(), self.state.copy(), self.agents.copy())
+        return LocationView(self.pos.coords(), self.state.as_view(), self.agents.copy())
     
     def get_info(self) -> typing.List[dict]:
         '''Get a dict of info about this location.'''
