@@ -43,7 +43,7 @@ class PyHexPosition:
         return f'{self.coords()}'
 
     def dist(self, other):
-        return self.cy_dist(other)
+        return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
 
     def offset(self, offset_q: int, offset_r: int, offset_s: int):
         '''Get a new object with the specified offset coordinates.'''
@@ -61,7 +61,7 @@ class PyHexPosition:
 
     def sorted_neighbors(self, target, dist: int = 1):
         '''Return direct neighbors sorted by distance from target.'''
-        return sorted(self.neighbors(dist), key=lambda n: target.cy_dist(n))
+        return sorted(self.neighbors(dist), key=lambda n: target.dist(n))
 
     def pathfind_dfs(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
         '''Heuristic-based pathfinder. May not be shortest path.'''
@@ -71,8 +71,8 @@ class PyHexPosition:
         if max_dist is None:
             max_dist = 1e9 # real big
         
-        if self.cy_dist(target) > max_dist:
-            raise ValueError(f'Target {self}->{target} (dist={self.cy_dist(target)}) is outside maximum distance of {max_dist}.')
+        if self.dist(target) > max_dist:
+            raise ValueError(f'Target {self}->{target} (dist={self.dist(target)}) is outside maximum distance of {max_dist}.')
 
         avoidset = set(avoidset)
         visited = set([self])
@@ -90,7 +90,7 @@ class PyHexPosition:
                     finished = True
                     break
                     #return current_path + [neighbor]
-                elif neighbor not in avoidset and neighbor not in visited and self.cy_dist(neighbor) <= max_dist:
+                elif neighbor not in avoidset and neighbor not in visited and self.dist(neighbor) <= max_dist:
                     current_path.append(neighbor)
                     visited.add(neighbor)
                     found_next = True
@@ -117,23 +117,16 @@ class PyHexPosition:
         ct = 0
         visited = set([self])
         while True:
-            fringe = self.cy_fringe(visited) - avoidset
+            fringe = self.fringe(visited, 1) - avoidset
             ct += 1
             if target in fringe:
-                ct += 1
+                #ct += 1
                 return ct
             elif not len(fringe):
                 return None
             else:
                 visited |= fringe
     
-    def fringe(self, others: set, dist: int = 1) -> set:
-        others = others | set([self])
-        fringe = set()
-        for pos in others:
-            fringe |= pos.neighbors(dist)
-        return fringe - others
-
     def fringe(self, others, dist: int = 1):
         '''Get positions on the fringe of the provided nodes.'''
         others = others | set([self])

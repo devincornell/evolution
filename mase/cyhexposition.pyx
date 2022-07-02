@@ -4,15 +4,16 @@
 
 
 #import itertools
-import math
+#import math
 #import dataclasses
-from libcpp.set cimport set as cpp_set
+#from libcpp.set cimport set as cpp_set
 #cimport libcpp.set.set
-from .errors import *
+
 #from libc.math cimport sin
 
 import time
-
+from libc.math cimport abs as c_abs
+from .errors import *
 
 #@dataclasses.dataclass
 cdef class CyHexPosition:
@@ -145,7 +146,7 @@ cdef class CyHexPosition:
 
     cpdef float cy_dist(self, CyHexPosition other):
         '''Definition of distance metric for cube coordinates.'''
-        return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
+        return (c_abs(self.q-other.q) + c_abs(self.r-other.r) + c_abs(self.s-other.s))/2
 
     cdef set cy_fringe(self, set others, int dist = 1):
         '''Get positions on the fringe of the provided nodes.'''
