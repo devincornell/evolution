@@ -1,9 +1,11 @@
+import typing
 import collections
 import dataclasses
 from typing import List
 import mase
  
- 
+from battlegameerrors import *
+
 import enum
 
 class ActionType(enum.Enum):
@@ -12,48 +14,27 @@ class ActionType(enum.Enum):
     CONSUME = enum.auto()
     
 class Action:
-    pass
+    def get_info(self) -> typing.Dict:
+        return dataclasses.asdict(self)
 
 @dataclasses.dataclass
-class MoveAction:
+class MoveAction(Action):
     agent_id: mase.AgentID
     new_pos: tuple
     action_type: ActionType = ActionType.MOVE
 
 @dataclasses.dataclass
-class AttackAction:
+class AttackAction(Action):
     agent_id: mase.AgentID
     target_id: mase.AgentID
     action_type: ActionType = ActionType.ATTACK
     
 @dataclasses.dataclass
-class ConsumeAction:
+class ConsumeAction(Action):
     agent_id: mase.AgentID
     action_type: ActionType = ActionType.CONSUME
 
-class AgentAlreadyExistsInLocationError(Exception):
-    pass
 
-class LocationIsBlockedError(Exception):
-    pass
-
-class OutOfRangeError(Exception):
-    pass
-
-class CannotControlOtherTeamMemberError(Exception):
-    pass
-
-class OutOfMovesError(Exception):
-    pass
-
-class OutOfActionsError(Exception):
-    pass
-
-class NoOrbsAtLocationError(Exception):
-    pass
-
-class ActionNotRecognizedError(Exception):
-    pass
 
 @dataclasses.dataclass
 class BattleController:
@@ -152,7 +133,7 @@ class BattleController:
             raise CannotControlOtherTeamMemberError(f'You cannot order a member of another team to attack. '
                 f'You are team {self.team_id} but agent {agent_id} is on team {agent.team_id}.')
     
-    def get_actions(self):
+    def get_actions(self) -> typing.List[Action]:
         return self.action_sequence.copy()
     
     def apply_actions(self, actions: List[Action]):

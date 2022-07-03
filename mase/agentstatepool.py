@@ -1,6 +1,7 @@
 import random
 import typing
 import copy
+import dataclasses
 
 from .errors import *
 #from .agentstate import AgentID, AgentState
@@ -13,13 +14,17 @@ class AgentID(int):
 class AgentState:
     def get_info(self):
         '''Get info dictionary for final game output.'''
-        raise NotImplementedError('Must implement get_info for the AgentState object.')
+        #raise NotImplementedError('Must implement get_info for the AgentState object.')
+        #return dataclasses.asdict(self)
+        return {}
 
 class AgentStatePool(typing.Dict[AgentID, AgentState]):
     '''Keeps track of agent states.
     '''
+    @property
     def agents(self):
         return self.values()
+    
     ##################### Add/Remove Functions #####################
     def add_agent(self, agent_id: AgentID, agent_state: AgentState):
         if agent_id in self:
@@ -49,3 +54,6 @@ class AgentStatePool(typing.Dict[AgentID, AgentState]):
     ##################### View-Related Functions #####################
     def deepcopy(self):
         return copy.deepcopy(self)
+    
+    def get_info(self):
+        return {aid: state.get_info() for aid, state in self.items()}

@@ -12,13 +12,14 @@ from .agentstatepool import AgentID
 @dataclasses.dataclass
 class LocationState:
     '''Maintains state for each location.'''
-    def get_view(self):
+    def deepcopy(self):
         '''Create a copy of itself for sharing with the user.'''
         return copy.deepcopy(self)
     
-    def get_info(self):
+    def get_info(self) -> typing.Dict:
         '''Get info for data collection.'''
-        raise NotImplementedError('Must implement get_info for the LocationState object.')    
+        #raise NotImplementedError('Must implement get_info() in the LocationState object implementation.')
+        return {}
 
 class Location:
     __slots__ = ['pos', 'state', 'agents']
@@ -34,6 +35,9 @@ class Location:
         self.pos = pos
         self.state = copy.copy(state) if state is not None else None
         self.agents = set(copy.copy(agents)) if agents is not None else set()
+        
+    def __repr__(self):
+        return f'{self.__class__.__name__}(pos={self.pos}, state={self.state}, agents={self.agents})'
         
     ############################# Working With Resources #############################    
     def __contains__(self, agent_id: AgentID):
@@ -51,7 +55,12 @@ class Location:
     def get_info(self) -> typing.List[dict]:
         '''Get a dict of info about this location.'''
         q, r, s = self.pos.coords()
-        return {'q': q, 'r': r, 's': s, 'x': self.pos.x, 'y': self.pos.y, **self.state}
+        return {
+            'q': q, 'r': r, 's': s, 
+            'x': self.pos.x, 'y': self.pos.y, 
+            'agents': list(self.agents), 
+            **self.state.get_info()
+        }
     
     ############################# Working With Agents #############################
     def add_agent(self, agent_id: AgentID):

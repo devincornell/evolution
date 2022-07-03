@@ -143,7 +143,7 @@ class HexMap:
         return list(sorted([]))
     
     ############################# Other Helpers #############################
-    def get_loc_info(self) -> typing.List[dict]:
+    def get_info(self) -> typing.List[dict]:
         '''Get dictionary information about each location.'''
         return [loc.get_info() for loc in self.locs.values()]
     
