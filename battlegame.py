@@ -57,6 +57,9 @@ class BattleGame:
             print(f'Starting turn {i}.')
             self.step()
             i += 1
+            
+            if i > self.max_turns:
+                break
         
     @property
     def is_finished(self):
