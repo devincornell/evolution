@@ -4,7 +4,7 @@ import typing
 import numpy as np
 
 #from first.agentid import AgentID
-from .agentstatepool import AgentID
+from .agentid import AgentID
 
 from .location import Location, LocationState
 from .position import HexPosition
@@ -90,7 +90,7 @@ class HexMap:
     
     def locations(self, filter: typing.Callable = lambda loc: True, sortkey: typing.Callable = lambda loc: 0) -> typing.List[HexPosition]:
         '''Get locations after filtering and sorting.'''
-        return [loc for loc in sorted(self.values(), key=sortkey) if filter(loc)]
+        return [loc for loc in sorted(self.locs.values(), key=sortkey) if filter(loc)]
     
     def check_pos(self, pos: HexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''

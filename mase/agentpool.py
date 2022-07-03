@@ -7,7 +7,8 @@ from matplotlib.colors import hexColorPattern
 
 from .position import HexPosition
 from .hexmap import HexMap
-from .agent import AgentID, Agent, AgentState
+from .agent import Agent, AgentState
+from .agentid import AgentID
 from .errors import *
 
 @dataclasses.dataclass
@@ -35,6 +36,10 @@ class AgentPool:
         return list(self.agents.keys())
     
     ##################### Access to Map #####################
+    def add_map(self, map):
+        '''Add the map to this pool.'''
+        self._map = map
+    
     @property
     def map(self):
         if self._map is not None:
@@ -76,7 +81,7 @@ class AgentPool:
         return copy.deepcopy(self)
     
     def get_info(self):
-        return {aid: state.get_info() for aid, state in self.items()}
+        return {aid: agent.state.get_info() for aid, agent in self.agents.items()}
 
 
 

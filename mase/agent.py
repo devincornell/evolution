@@ -5,13 +5,12 @@ from .errors import *
 from .hexmap import HexMap
 from .position import HexPosition
 from .location import Location
-
+from .agentid import AgentID
 #from .agentpool import AgentPool
 AgentPoolType = typing.TypeVar('AgentPoolType')
+#HexMapType = typing.TypeVar('HexMapType')
 
-class AgentID(int):
-    '''Custom type for agent id (mostly for type hints).'''
-    pass
+
 
 #@dataclasses.dataclass
 class AgentState:
@@ -51,15 +50,15 @@ class Agent:
     
     @property
     def pos(self) -> HexPosition:
-        self.map.get_agent_pos(self.id)
+        return self.map.get_agent_pos(self.id)
     
     @property
     def loc(self) -> Location:
-        self.map.get_agent_loc(self.id)
+        return self.map.get_agent_loc(self.id)
     
     ##################### Utility Functions for User #####################
     
-    def nearest_agents(self, agent_filter: typing.Callable = lambda agent: True) -> typing.List[Agent]:
+    def nearest_agents(self, agent_filter: typing.Callable = lambda agent: True):
         '''Get agents nearest to this agent after filtering criteria.'''
         sortkey = lambda pos: self.pos.dist(pos)
         return [self.pool[aid] for aid in self.map.agents(sortkey) if agent_filter(self.pool[aid])]

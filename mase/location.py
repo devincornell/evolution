@@ -5,7 +5,7 @@ import copy
 
 #from .position import Position
 from .position import HexPosition
-from .agentstatepool import AgentID
+from .agentid import AgentID
 
 #MapType = typing.TypeVar('MapType')
 

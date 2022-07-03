@@ -5,7 +5,9 @@ from .hexmap import HexMap
 #from .pyhexposition import PyHexPosition
 #from .hexposition import HexPosition
 from .hexmapgenerator import *
-from .agentstatepool import AgentStatePool, AgentState, AgentID
+from .agentstatepool import AgentStatePool
+from .agent import AgentState, AgentID
+from .agentpool import AgentPool
 
 #from .agentstate import AgentState, AgentID
 from .position import HexPosition, PyHexPosition
