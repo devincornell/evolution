@@ -18,6 +18,8 @@ class AgentState:
 class AgentStatePool(typing.Dict[AgentID, AgentState]):
     '''Keeps track of agent states.
     '''
+    def agents(self):
+        return self.values()
     ##################### Add/Remove Functions #####################
     def add_agent(self, agent_id: AgentID, agent_state: AgentState):
         if agent_id in self:
