@@ -10,7 +10,7 @@ from battlecontroller import BattleController
 
 @dataclasses.dataclass
 class BattleAgentState(mase.AgentState):
-    id: int
+    id: mase.AgentID
     team_id: int
     level: int = 1
     health: int = 1
@@ -33,7 +33,6 @@ class BattleAgentState(mase.AgentState):
 class BattleLocationState(mase.LocationState):
     orbs: int
     is_blocked: bool
-    
 
 class BattleGame:
     '''A game implemented using mase.'''
@@ -69,16 +68,18 @@ class BattleGame:
         for team_id, ai in enumerate(self.ai_players):
             
             # prepare interface for AI to use
-            new_map = self.map.deepcopy()
-            new_pool = self.pool.deepcopy()
-            ai_controller = BattleController(team_id, new_map, new_pool)
+            #new_map = self.map.deepcopy()
+            #new_pool = self.pool.deepcopy()
+            #ai_controller = BattleController(team_id, new_map, new_pool)
+            ctrlr = BattleController(team_id, self.map, self.pool)
             
             # execute AI for this turn
-            ai(team_id, new_map, new_pool, ai_controller)
+            #ai(team_id, new_map, new_pool, ctrlr)
+            ai(team_id, self.map, self.pool, ctrlr)
             
             # get user actions and apply them to real map and pool
-            game_controller = BattleController(team_id, self.map, self.pool)
-            game_controller.apply_actions(ai_controller.get_actions())
+            #game_controller = BattleController(team_id, self.map, self.pool)
+            #game_controller.apply_actions(ai_controller.get_actions())
     
     
     ################### Game Setup ###################
@@ -112,7 +113,7 @@ class BattleGame:
     
     def generate_random_map(self, map_radius: int, blocked_ratio: float) -> mase.HexMap:
         '''Generates a random map according to some conditions.'''
-        game_map = mase.HexMap(map_radius, default_state = BattleLocationState)
+        game_map = mase.HexMap(map_radius, default_state = BattleLocationState(0, False))
         
         # block off some areas of the map
         blocked_pos = random.sample(game_map.positions, int(len(game_map)*blocked_ratio))
@@ -121,14 +122,5 @@ class BattleGame:
         
         return game_map
         
-if __name__ == '__main__':
-    def example_ai(team_id: int, game_map: mase.HexMap, agents: mase.AgentStatePool, controller: BattleController):
-        print(f'Starting team {team_id} turn!')
-    
-    game = BattleGame([example_ai, example_ai, example_ai], 10, 0.2, 0.1, 10, 100)
-    #print(game.num_start_warriors)
-    #print(game.ai_players)
-    #print(game.pool)
-    #print(game.map.locs.keys())
-    game.run()
+
     
