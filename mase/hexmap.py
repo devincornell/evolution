@@ -30,7 +30,7 @@ class HexMap:
         valid_pos.add(center)
         self.border_pos = center.neighbors(radius+1) - valid_pos
         for pos in valid_pos:
-            self.locs[pos] = Location(pos, self, state=copy.deepcopy(default_state))
+            self.locs[pos] = Location(pos, state=copy.deepcopy(default_state))
 
     def __repr__(self):
         return f'{self.__class__.__name__}(size={self.radius})'
@@ -52,7 +52,7 @@ class HexMap:
         if agent_id in self.agent_pos:
             raise AgentExistsError(f'The agent "{agent_id}" already exists on this map.')
         self.agent_pos[agent_id] = pos
-        self.get_loc(pos).agents.append(agent_id)
+        self.locs[pos].agents.add(agent_id)
         
     def remove_agent(self, agent_id: AgentID):
         '''Remove the agent form the map.'''
@@ -64,7 +64,7 @@ class HexMap:
         '''Move the agent to a new location after checking rule.
         '''        
         old_loc = self.get_agent_loc(agent_id)
-        new_loc = self.get_loc(new_pos)
+        new_loc = self[new_pos]
                         
         old_loc.remove_agent(agent_id)
         new_loc.add_agent(agent_id)
@@ -80,6 +80,9 @@ class HexMap:
     
     def __iter__(self):
         return iter(self.locs.values())
+    
+    def __len__(self):
+        return len(self.locs)
 
     @property
     def positions(self) -> typing.Set[HexPosition]:
@@ -91,7 +94,7 @@ class HexMap:
     
     def check_pos(self, pos: HexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''
-        if pos in self.locs:
+        if pos not in self.locs:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
     def region(self, center: HexPosition, dist: int) -> set:
@@ -116,7 +119,7 @@ class HexMap:
 
     def get_agent_loc(self, agent_id: AgentID) -> Location:
         '''Get the location object associated with teh agent.'''
-        return self.get_loc(self.get_agent_pos(agent_id))
+        return self[self.get_agent_pos(agent_id)]
         
     ############################# User Interface #############################
     def user_pathfind_dfs(self, source: tuple, target: tuple, avoid_positions: typing.Set[tuple]):
@@ -128,12 +131,12 @@ class HexMap:
         source_pos, target_pos = self.PositionType(source), self.PositionType(target)
         return source_pos.pathfind_dfs(target, avoidset)
         
-    def user_nearest_agents(self, position: tuple):
-        '''Get agents nearest to the provided position.'''
-        target = self.PositionType(*position)
-        sortkey = lambda pos: target.dist(pos)
-        for pos in 
-        return list(sorted([aid for aid, pos in self.agent_pos.items()], key=sortkey))
+    #def user_nearest_agents(self, position: tuple):
+    #    '''Get agents nearest to the provided position.'''
+    #    target = self.PositionType(*position)
+    #    sortkey = lambda pos: target.dist(pos)
+    #    for pos in 
+    #    return list(sorted([aid for aid, pos in self.agent_pos.items()], key=sortkey))
 
     def user_nearest_locations(self, position: tuple):
         target = self.PositionType(*position)
