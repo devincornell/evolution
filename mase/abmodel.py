@@ -32,7 +32,7 @@ class ABModel:
         return [self.pool[aid] for loc in self.map.locations(filter=loc_filter, sortkey=sortkey)]
 
         
-    locations
+    #locations
     #def nearest_agents_base(self, target: HexPosition, agent_criteria: typing.Callable = lambda agent: True):
     #    sort = lambda loc: target.dist(loc)
     #    filt = lambda loc: len(loc.agents)
