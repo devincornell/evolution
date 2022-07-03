@@ -6,13 +6,22 @@ import battlecontroller
 import mase
 from mase import agentstatepool
 
-def example_ai(team_id: int, game_map: mase.HexMap, pool: mase.AgentStatePool, controller: battlecontroller.BattleController):
+def example_ai_consume(team_id: int, game_map: mase.HexMap, pool: mase.AgentStatePool, controller: battlecontroller.BattleController):
     #print(f'Starting team {team_id} turn!')
     for agent in pool.agents:
         if agent.team_id == team_id:
             loc = game_map.get_agent_loc(agent.id)
             if loc.state.orbs > 0:
                 print('found orbs!')
+                controller.consume(agent.id)
+                
+def example_ai_attack(team_id, game_map, pool, controller):
+    for agent in pool.agents:
+        if agent.team_id == team_id:
+            criteria = lambda aid: True
+            nearest = game_map.nearest_agents(game_map.get_agent_pos(agent.id))
+            if loc.state.orbs > 0:
+                # they found some orbs!
                 controller.consume(agent.id)
 
 if __name__ == '__main__':
