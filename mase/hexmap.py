@@ -88,9 +88,9 @@ class HexMap:
     def positions(self) -> typing.Set[HexPosition]:
         return set(self.locs.keys())
     
-    @property
-    def locations(self) -> typing.List[HexPosition]:
-        return list(self.locs.values())
+    def locations(self, filter: typing.Callable = lambda loc: True, sortkey: typing.Callable = lambda loc: 0) -> typing.List[HexPosition]:
+        '''Get locations after filtering and sorting.'''
+        return [loc for loc in sorted(self.values(), key=sortkey) if filter(loc)]
     
     def check_pos(self, pos: HexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''
@@ -106,6 +106,10 @@ class HexMap:
         return [self[pos] for pos in self.region(center, dist)]
     
     ############################# Working With Agents #############################
+    def agents(self, sortkey: typing.Callable = lambda loc: 0) -> typing.List[AgentID]:
+        '''Get locations after filtering and sorting.'''
+        return [aid for aid,pos in sorted(self.agent_pos.items(), key=lambda a,p: sortkey(self[p]))]
+
     def __contains__(self, agent_id: AgentID):
         '''Check if the agent is on the map.'''
         return agent_id in self.agent_pos
@@ -120,27 +124,6 @@ class HexMap:
     def get_agent_loc(self, agent_id: AgentID) -> Location:
         '''Get the location object associated with teh agent.'''
         return self[self.get_agent_pos(agent_id)]
-        
-    ############################# User Interface #############################
-    def user_pathfind_dfs(self, source: tuple, target: tuple, avoid_positions: typing.Set[tuple]):
-        '''Find the first path from source to target using dfs.
-        Args:
-            avoid_positions: set of positions to avoid when pathfinding.
-        '''
-        avoidset = {self.PositionType(*pos) for pos in avoid_positions}
-        source_pos, target_pos = self.PositionType(source), self.PositionType(target)
-        return source_pos.pathfind_dfs(target, avoidset)
-        
-    #def user_nearest_agents(self, position: tuple):
-    #    '''Get agents nearest to the provided position.'''
-    #    target = self.PositionType(*position)
-    #    sortkey = lambda pos: target.dist(pos)
-    #    for pos in 
-    #    return list(sorted([aid for aid, pos in self.agent_pos.items()], key=sortkey))
-
-    def user_nearest_locations(self, position: tuple):
-        target = self.PositionType(*position)
-        return list(sorted([]))
     
     ############################# Other Helpers #############################
     def get_info(self) -> typing.List[dict]:

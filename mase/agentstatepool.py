@@ -21,9 +21,10 @@ class AgentState:
 class AgentStatePool(typing.Dict[AgentID, AgentState]):
     '''Keeps track of agent states.
     '''
-    @property
-    def agents(self):
-        return self.values()
+    ##################### View-Related Functions #####################
+    def agents(self, filter_criteria: typing.Callable = lambda astate: True):
+        '''Get the agents after applying filter criteria.'''
+        return [astate for astate in self.values() if filter_criteria(astate)]
     
     ##################### Add/Remove Functions #####################
     def add_agent(self, agent_id: AgentID, agent_state: AgentState):
