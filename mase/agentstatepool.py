@@ -11,29 +11,28 @@ class AgentID(int):
 
 #@dataclasses.dataclass
 class AgentState:
-    '''Keeps track of the state of a single agent.'''
-    
-    def get_view(self):
-        '''Create a copy of itself for sharing with the user.'''
-        return copy.deepcopy(self)
-    
     def get_info(self):
-        '''Get info for data collection.'''
+        '''Get info dictionary for final game output.'''
         raise NotImplementedError('Must implement get_info for the AgentState object.')
-
 
 class AgentStatePool(typing.Dict[AgentID, AgentState]):
     '''Keeps track of agent states.
     '''
     ##################### Add/Remove Functions #####################
-    def add(self, agent_id: AgentID, agent_state: AgentState):
+    def add_agent(self, agent_id: AgentID, agent_state: AgentState):
         if agent_id in self:
             raise AgentExistsError(f'The agent {agent_id} already exists in this pool.')
         self[agent_id] = agent_state
         
-    def remove(self, agent_id: AgentID):
+    def remove_agent(self, agent_id: AgentID):
         try:
             del self[agent_id]
+        except KeyError:
+            raise AgentDoesNotExistError(f'The agent {agent_id} does not exist in this pool.')
+        
+    def get_agent(self, agent_id: AgentID) -> AgentState:
+        try:
+            return self[agent_id]
         except KeyError:
             raise AgentDoesNotExistError(f'The agent {agent_id} does not exist in this pool.')
 
@@ -46,5 +45,5 @@ class AgentStatePool(typing.Dict[AgentID, AgentState]):
         '''Activate agents according to some sorting criteria.'''
         
     ##################### View-Related Functions #####################
-    def get_view(self):
-        return {aid:agent.get_view() for aid,agent in self.items()}
+    def deepcopy(self):
+        return copy.deepcopy(self)
