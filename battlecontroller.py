@@ -116,6 +116,7 @@ class BattleController:
         if target_agent.health <= 0:
             self.pool.remove_agent(target_agent.id)
             self.map.remove_agent(target_agent.id)
+            agent.health += 1
             if self.verbose: print(f'Agent {agent_id} killed {target_id}: {agent} vs {target_agent}.')
         else:
             if self.verbose: print(f'Agent {agent_id} attacked {target_id}, reducing '
