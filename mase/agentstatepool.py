@@ -5,18 +5,8 @@ import dataclasses
 
 from .errors import *
 #from .agentstate import AgentID, AgentState
+from .agent import AgentID, AgentState
 
-class AgentID(int):
-    '''Custom type for agent id (mostly for type hints).'''
-    pass
-
-#@dataclasses.dataclass
-class AgentState:
-    def get_info(self):
-        '''Get info dictionary for final game output.'''
-        #raise NotImplementedError('Must implement get_info for the AgentState object.')
-        #return dataclasses.asdict(self)
-        return {}
 
 class AgentStatePool(typing.Dict[AgentID, AgentState]):
     '''Keeps track of agent states.
