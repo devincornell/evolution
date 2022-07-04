@@ -40,6 +40,8 @@ class MoveAction(Action):
 class AttackAction(Action):
     agent_id: mase.AgentID
     target_id: mase.AgentID
+    target_pos: tuple
+    target_pos_xy: tuple
     action_type: ActionType = ActionType.ATTACK
     
     def get_info(self) -> typing.Dict:
@@ -47,6 +49,8 @@ class AttackAction(Action):
             'action_type': str(self.action_type),
             'agent_id': self.agent_id,
             'target_id': self.target_id,
+            'target_pos': self.target_pos,
+            'target_pos_xy': self.target_pos_xy,
         }
     
 @dataclasses.dataclass
@@ -130,7 +134,7 @@ class BattleController:
                 f'health by {agent.state.attack} to {target_agent.state.health}.')
         
         self.action_ct[agent_id] += 1    
-        self.action_sequence.append(AttackAction(agent_id, target_id=target_id))
+        self.action_sequence.append(AttackAction(agent_id, target_id=target_id, target_pos=target_pos.coords(), target_pos_xy=target_pos.coords_xy()))
         
         
     def consume(self, agent_id: mase.AgentID):

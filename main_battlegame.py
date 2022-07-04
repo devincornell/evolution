@@ -1,6 +1,6 @@
 import random
 import collections
-
+import json
 import battlegame
 import battlecontroller
 from battlegameerrors import *
@@ -48,8 +48,9 @@ def example_ai_attack(team_id: int, game_map: mase.HexMap, agents: mase.AgentPoo
             
             for other_agent in agent.nearest_agents(lambda a: a.state.team_id != team_id):
                     
-                path = agent.pathfind_dfs(other_agent.pos, valid_positions)[:-1]
+                path = agent.pathfind_dfs(other_agent.pos, valid_positions)
                 if path is not None:
+                    path = path[:-1]
                     nsteps = min(agent.state.speed, len(path)-1)
                     
                     if agent.pos != path[nsteps]:
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
     game = battlegame.BattleGame(
         ai_players = [example_ai_consume, example_ai_attack],
-        map_radius = 6,
+        map_radius = 30,
         blocked_ratio = 0.2,
         food_ratio = 0.1,
         num_start_warriors = 3,
@@ -89,15 +90,21 @@ if __name__ == '__main__':
         # print some data about the results
         agent_levels = dict()
         agent_health = dict()
-        for agent in game.pool:
-            agent_levels.setdefault(agent.state.team_id, [])
-            agent_levels[agent.state.team_id].append(agent.state.level)
+        #print(game.pool.agents)
+        #print(f'----------------------')
+        #print(game.pool.get_info())
+        #print(f'------------------------------------------------')
+        #print(game.)
+        #for agent in game.pool:
+            #agent_levels.setdefault(agent.state.team_id, [])
+            #agent_levels[agent.state.team_id].append(agent.state.level)
             
-            agent_health.setdefault(agent.state.team_id, [])
-            agent_health[agent.state.team_id].append(agent.state.health)
+            #agent_health.setdefault(agent.state.team_id, [])
+            #agent_health[agent.state.team_id].append(agent.state.health)
+            #print(json.dumps(agent.state.get_info()))
         
-        print(agent_health)
-        print(agent_levels)
+        #print(agent_health)
+        #print(agent_levels)
         #print('==========================')
         #print(len(game.pool.agents))
         #from functools import reduce
@@ -106,8 +113,7 @@ if __name__ == '__main__':
     game.save_game_state('tmp/save_game1.json')
     
     # make sure the characters ever jumped
-    for action in game.actions:
-        if action.action_type == battlecontroller.ActionType.MOVE:
-            assert(action.old_pos.dist(action.new_pos) == 1)
-            #print(action)
+    #for action in game.actions:
+    #    if action.action_type == battlecontroller.ActionType.MOVE:
+    #        assert(action.old_pos.dist(action.new_pos) == 1)
     

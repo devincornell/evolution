@@ -11,7 +11,6 @@ import battlecontroller
 
 @dataclasses.dataclass
 class BattleAgentState(mase.AgentState):
-    id: mase.AgentID
     team_id: int
     level: int = 1
     health: int = 1
@@ -64,7 +63,7 @@ class BattleGame:
         '''Start the simulation.'''
         i = 1
         while not self.is_finished:
-            print(f'Starting turn {i}.')
+            #print(f'Starting turn {i}.')
             self.step()
             i += 1
             
@@ -91,10 +90,11 @@ class BattleGame:
             # get user actions and apply them to real map and pool
             #game_controller = battlecontroller.BattleController(team_id, self.map, self.pool)
             #game_controller.apply_actions(ai_controller.get_actions())
-            self.actions += ctrlr.get_actions()
+            self.actions.append(ctrlr.get_actions())
             
             # save info about the game state after each turn
             self.info_history.append(self.get_info())
+            print(self.get_info()['agents'])
     
     
     ################### Game Setup ###################
@@ -106,17 +106,18 @@ class BattleGame:
         
         # set up agents
         for _ in range(self.num_start_warriors):
-            for player_id, player in enumerate(self.ai_players):
+            for team_id, player in enumerate(self.ai_players):
                 
                 # create a new agent and add it to the pool
-                state = BattleAgentState(self.next_agent_id(), player_id)
+                state = BattleAgentState(team_id)
                 
                 # put agent in free, non-blocked location
                 loc = random.choice(locations)
                 while loc.state.is_blocked or len(loc.agents):
                     loc = random.choice(locations)
                 
-                self.pool.add_agent(self.next_agent_id(), state, loc.pos)
+                idx = self.next_agent_id()
+                self.pool.add_agent(idx, state, loc.pos)
                 
         # spread orbs
         free_loc = set([loc for loc in locations if not loc.state.is_blocked])
@@ -141,14 +142,14 @@ class BattleGame:
         
     def get_info(self):
         return {
-            'actions': [a.get_info() for a in self.actions],
+            'actions': [[a.get_info() for a in tactions] for tactions in self.actions],
             'agents': self.pool.get_info(),
             'map': self.map.get_info(),
         }
         
     def save_game_state(self, fname: str):
         with open(fname, 'w') as f:
-            json.dump(self.info_history, f)
+            json.dump(self.info_history, f, indent=4)
         
         
     

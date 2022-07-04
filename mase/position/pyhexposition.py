@@ -31,6 +31,9 @@ class PyHexPosition:
     def y(self):
         return self.r + (self.q + (self.q&1)) / 2
 
+    def coords_xy(self):
+        return (self.x, self.y)
+
     def coords(self):
         return (self.q, self.r, self.s)
 

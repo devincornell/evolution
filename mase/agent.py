@@ -16,9 +16,7 @@ AgentPoolType = typing.TypeVar('AgentPoolType')
 class AgentState:
     def get_info(self):
         '''Get info dictionary for final game output.'''
-        #raise NotImplementedError('Must implement get_info for the AgentState object.')
-        #return dataclasses.asdict(self)
-        return {}
+        raise NotImplementedError('Must implement get_info for the AgentState object.')
     
 @dataclasses.dataclass
 class Agent:
@@ -33,8 +31,20 @@ class Agent:
         pos = self.pos
     
     def __hash__(self):
-        '''Unique set by id.'''
         return hash(self.id)
+    
+    def __eq__(self, other):
+        return self.id == other.id
+    
+    def get_info(self) -> typing.Dict:
+        p, q, r = self.pos.coords()
+        return {
+            'id': self.id, 
+            'x': self.pos.x, 
+            'y': self.pos.x, 
+            'p': p, 'q': q, 'r': r,
+            **self.state.get_info()
+        }
     
     ##################### Map Access Functions #####################
     @property
