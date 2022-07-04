@@ -40,9 +40,11 @@ class Agent:
         p, q, r = self.pos.coords()
         return {
             'id': self.id, 
-            'x': self.pos.x, 
-            'y': self.pos.x, 
-            'p': p, 'q': q, 'r': r,
+            #'x': self.pos.x, 
+            #'y': self.pos.x, 
+            'xy': self.pos.coords_xy(),
+            #'p': p, 'q': q, 'r': r,
+            'coords': self.pos.coords(),
             **self.state.get_info()
         }
     

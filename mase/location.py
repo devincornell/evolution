@@ -56,8 +56,10 @@ class Location:
         '''Get a dict of info about this location.'''
         q, r, s = self.pos.coords()
         return {
-            'q': q, 'r': r, 's': s, 
-            'x': self.pos.x, 'y': self.pos.y, 
+            #'q': q, 'r': r, 's': s, 
+            'coords': self.pos.coords(),
+            #'x': self.pos.x, 'y': self.pos.y, 
+            'xy': self.pos.coords_xy(),
             'agents': list(self.agents), 
             **self.state.get_info()
         }
