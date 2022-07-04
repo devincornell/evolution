@@ -20,7 +20,8 @@ class Action:
 @dataclasses.dataclass
 class MoveAction(Action):
     agent_id: mase.AgentID
-    new_pos: tuple
+    new_pos: mase.HexPosition
+    old_pos: mase.HexPosition
     action_type: ActionType = ActionType.MOVE
 
 @dataclasses.dataclass
@@ -47,12 +48,12 @@ class BattleController:
     action_ct: collections.Counter = dataclasses.field(default_factory=collections.Counter)
     verbose: bool = False
     
-    def move(self, agent_id: mase.AgentID, new_position: tuple):
+    def move(self, agent_id: mase.AgentID, new_position: mase):
         '''Move the agent to a new position.'''
-        agent = self.pool.get_agent(agent_id)
+        agent = self.pool[agent_id]
         current_pos = self.map.get_agent_pos(agent_id)
-        pos = mase.HexPosition(*new_position)
-        loc = self.map[pos]
+        #pos = mase.HexPosition(*new_position)
+        loc = self.map[new_position]
         
         # do some error checking
         if self.move_ct[agent_id] > 0:
@@ -63,19 +64,19 @@ class BattleController:
         elif len(loc.agents):
             existing_agent = list(loc.agents)[0]
             raise AgentAlreadyExistsInLocationError(f'Cannot move agent {agent_id}: '
-                f'agent {existing_agent} already exists at {pos}.')
-        elif loc.is_blocked:
-            raise LocationIsBlockedError(f'Agent {agent_id} cannot move to position {pos}: '
+                f'agent {existing_agent} already exists at {new_position}.')
+        elif loc.state.is_blocked:
+            raise LocationIsBlockedError(f'Agent {agent_id} cannot move to position {new_position}: '
                 'it is blocked.')
-        elif current_pos.dist(pos) > self.pool.get_agent(agent_id).speed:
-            raise OutOfRangeError(f'Agent {agent_id} cannot move to position {pos} because '
-                f'it is distance {current_pos.dist(pos)} but agent speed is only '
+        elif current_pos.dist(new_position) > self.pool[agent_id].state.speed:
+            raise OutOfRangeError(f'Agent {agent_id} cannot move to position {new_position} because '
+                f'it is distance {current_pos.dist(new_position)} but agent speed is only '
                 f'{self.pool.get_agent(agent_id).speed}.')
         
-        self.map.move_agent(agent_id, pos)
-        self.action_sequence.append(MoveAction(agent_id, pos))
+        self.map.move_agent(agent_id, new_position)
+        self.action_sequence.append(MoveAction(agent_id, new_position, current_pos))
         self.move_ct[agent_id] += 1
-        if self.verbose: print(f'Agent {agent_id} moved {current_pos.dist(pos)} positions to {pos}.')
+        if self.verbose: print(f'Agent {agent_id} moved {current_pos.dist(new_position)} positions to {new_position}.')
         
     def attack(self, agent_id: mase.AgentID, target_id: mase.AgentID):
         '''Attack an agent of the opposite team.'''

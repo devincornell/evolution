@@ -104,7 +104,7 @@ class HexMap:
     def region_locs(self, center: HexPosition, dist: int) -> list:
         '''Get sequence of locations in the given region.'''
         return [self[pos] for pos in self.region(center, dist)]
-    
+        
     ############################# Working With Agents #############################
     def agents(self, sortkey: typing.Callable = lambda loc: 0) -> typing.List[AgentID]:
         '''Get locations after filtering and sorting.'''

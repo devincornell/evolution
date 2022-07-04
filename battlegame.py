@@ -22,7 +22,7 @@ class BattleAgentState(mase.AgentState):
     @property
     def speed(self):
         '''Number of steps an agent can take in oen turn.'''
-        return self.level
+        return 1
     
     @property
     def attack(self):

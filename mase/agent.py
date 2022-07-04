@@ -65,15 +65,24 @@ class Agent:
 
     def nearest_locs(self, loc_filter: typing.Callable = lambda agent: True) -> typing.List[Location]:
         '''Get locations nearest to this position after filtering criteria.'''
-        sortkey = lambda pos: self.pos.dist(pos)
+        sortkey = lambda loc: self.pos.dist(loc.pos)
         return self.map.locations(filter=loc_filter, sortkey=sortkey)
 
-    def pathfind_dfs(self, target: tuple, avoid_positions: typing.Set[tuple]):
+    def pathfind_dfs(self, target: HexPosition, use_positions: typing.Set[HexPosition]):
+        '''Find the first path from source to target using dfs.
+        Args:
+            use_positions: valid movement positions.
+        '''
+        #useset = {self.map.PositionType(*pos) for pos in use_positions}
+        #target_pos = self.map.PositionType(*target)
+        return self.pos.pathfind_dfs(target, use_positions)
+
+    def pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPosition]):
         '''Find the first path from source to target using dfs.
         Args:
             avoid_positions: set of positions to avoid when pathfinding.
         '''
-        avoidset = {self.PositionType(*pos) for pos in avoid_positions}
-        source_pos, target_pos = self.map.get_agent_pos(self.pos), self.PositionType(*target)
-        return [pos.coords() for pos in source_pos.pathfind_dfs(target_pos, avoidset)]
+        #avoidset = {self.map.PositionType(*pos) for pos in avoid_positions}
+        #target_pos = self.map.PositionType(*target)
+        return [pos.coords() for pos in self.pos.pathfind_dfs_avoid(target, avoid_positions)]
 
