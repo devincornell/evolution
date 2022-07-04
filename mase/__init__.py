@@ -6,7 +6,8 @@ from .hexmap import HexMap
 #from .hexposition import HexPosition
 from .hexmapgenerator import *
 from .agentstatepool import AgentStatePool
-from .agent import AgentState, AgentID
+from .agentid import AgentID
+from .agent import Agent, AgentState
 from .agentpool import AgentPool
 
 #from .agentstate import AgentState, AgentID

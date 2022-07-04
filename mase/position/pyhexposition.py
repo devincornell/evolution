@@ -111,8 +111,8 @@ class PyHexPosition:
 
     def pathfind_dfs(self, target, useset: set = None, max_dist: int = None, verbose: bool = False):
         '''Heuristic-based pathfinder. May not be shortest path.'''
-        if target not in useset:
-            raise TargetNotInUseSet(f'Target {target} was not found in useset.')
+        #if target not in useset:
+        #    raise TargetNotInUseSet(f'Target {target} was not found in useset.')
         
         if max_dist is None:
             max_dist = 1e9 # real big

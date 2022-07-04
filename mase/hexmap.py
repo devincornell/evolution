@@ -83,7 +83,7 @@ class HexMap:
     
     def __len__(self):
         return len(self.locs)
-
+    
     @property
     def positions(self) -> typing.Set[HexPosition]:
         return set(self.locs.keys())
@@ -108,7 +108,9 @@ class HexMap:
     ############################# Working With Agents #############################
     def agents(self, sortkey: typing.Callable = lambda loc: 0) -> typing.List[AgentID]:
         '''Get locations after filtering and sorting.'''
-        return [aid for aid,pos in sorted(self.agent_pos.items(), key=lambda a,p: sortkey(self[p]))]
+        print(self.agent_pos)
+        sorted_pos = sorted(self.agent_pos.items(), key=lambda ap: sortkey(ap[1]))
+        return [aid for aid,pos in sorted_pos]
 
     def __contains__(self, agent_id: AgentID):
         '''Check if the agent is on the map.'''
@@ -123,7 +125,7 @@ class HexMap:
 
     def get_agent_loc(self, agent_id: AgentID) -> Location:
         '''Get the location object associated with teh agent.'''
-        return self[self.get_agent_pos(agent_id)]
+        return self.locs[self.get_agent_pos(agent_id)]
     
     ############################# Other Helpers #############################
     def get_info(self) -> typing.List[dict]:

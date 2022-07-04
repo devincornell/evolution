@@ -141,7 +141,7 @@ class BattleGame:
         
     def get_info(self):
         return {
-            #'actions': [a.get_info() for a in self.actions],
+            'actions': [a.get_info() for a in self.actions],
             'agents': self.pool.get_info(),
             'map': self.map.get_info(),
         }

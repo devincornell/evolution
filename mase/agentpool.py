@@ -31,6 +31,9 @@ class AgentPool:
     def __iter__(self):
         return iter(self.agents.values())
     
+    def __len__(self):
+        return len(self.agents)
+    
     @property
     def ids(self) -> typing.List[AgentID]:
         return list(self.agents.keys())

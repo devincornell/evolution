@@ -14,8 +14,9 @@ class ActionType(enum.Enum):
     CONSUME = enum.auto()
     
 class Action:
-    def get_info(self) -> typing.Dict:
-        return dataclasses.asdict(self)
+    pass
+    #def get_info(self) -> typing.Dict:
+    #    return dataclasses.asdict(self)
 
 @dataclasses.dataclass
 class MoveAction(Action):
@@ -23,6 +24,17 @@ class MoveAction(Action):
     new_pos: mase.HexPosition
     old_pos: mase.HexPosition
     action_type: ActionType = ActionType.MOVE
+    
+    def get_info(self) -> typing.Dict:
+        return {
+            'action_type': str(self.action_type),
+            'agent_id': self.agent_id,
+            'new_pos': self.new_pos.coords(),
+            'new_pos_xy': (self.new_pos.x, self.new_pos.y),
+            'old_pos': self.old_pos.coords(),
+            'old_pos_xy': (self.old_pos.x, self.old_pos.y),
+        }
+
 
 @dataclasses.dataclass
 class AttackAction(Action):
@@ -30,10 +42,23 @@ class AttackAction(Action):
     target_id: mase.AgentID
     action_type: ActionType = ActionType.ATTACK
     
+    def get_info(self) -> typing.Dict:
+        return {
+            'action_type': str(self.action_type),
+            'agent_id': self.agent_id,
+            'target_id': self.target_id,
+        }
+    
 @dataclasses.dataclass
 class ConsumeAction(Action):
     agent_id: mase.AgentID
     action_type: ActionType = ActionType.CONSUME
+
+    def get_info(self) -> typing.Dict:
+        return {
+            'action_type': str(self.action_type),
+            'agent_id': self.agent_id,
+        }
 
 
 
@@ -71,7 +96,7 @@ class BattleController:
         elif current_pos.dist(new_position) > self.pool[agent_id].state.speed:
             raise OutOfRangeError(f'Agent {agent_id} cannot move to position {new_position} because '
                 f'it is distance {current_pos.dist(new_position)} but agent speed is only '
-                f'{self.pool.get_agent(agent_id).speed}.')
+                f'{self.pool[agent_id].state.speed}.')
         
         self.map.move_agent(agent_id, new_position)
         self.action_sequence.append(MoveAction(agent_id, new_position, current_pos))
@@ -80,8 +105,8 @@ class BattleController:
         
     def attack(self, agent_id: mase.AgentID, target_id: mase.AgentID):
         '''Attack an agent of the opposite team.'''
-        agent = self.pool.get_agent(agent_id)
-        target_agent = self.pool.get_agent(target_id)
+        agent = self.pool[agent_id]
+        target_agent = self.pool[target_id]
         
         pos = self.map.get_agent_pos(agent_id)
         target_pos = self.map.get_agent_pos(target_id)
@@ -97,7 +122,7 @@ class BattleController:
         
         if target_agent.state.health <= 0:
             self.pool.remove_agent(target_agent.id)
-            self.map.remove_agent(target_agent.id)
+            #self.map.remove_agent(target_agent.id)
             agent.state.health += 1
             if self.verbose: print(f'Agent {agent_id} killed {target_id}: {agent} vs {target_agent}.')
         else:
