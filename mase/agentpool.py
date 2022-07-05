@@ -84,7 +84,7 @@ class AgentPool:
         return copy.deepcopy(self)
     
     def get_info(self):
-        return {agent.id: agent.get_info() for agent in self}
+        return [agent.get_info() for agent in self]
 
 
 

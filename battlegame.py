@@ -5,6 +5,7 @@ import enum
 import random
 import collections
 import json
+import copy
 
 #from battlecontroller import BattleController
 import battlecontroller
@@ -62,7 +63,7 @@ class BattleGame:
     def run(self):
         '''Start the simulation.'''
         i = 1
-        while not self.is_finished:
+        while not self.is_finished():
             #print(f'Starting turn {i}.')
             self.step()
             i += 1
@@ -70,9 +71,13 @@ class BattleGame:
             if i > self.max_turns:
                 break
         
-    @property
     def is_finished(self):
         return len(set([a.state.team_id for a in self.pool])) <= 1
+        
+    def get_winner(self):
+        team_id = next(iter(self.pool)).state.team_id
+        return self.ai_players[team_id]
+        
         
     def step(self):
         for team_id, ai in enumerate(self.ai_players):
@@ -94,7 +99,7 @@ class BattleGame:
             
             # save info about the game state after each turn
             self.info_history.append(self.get_info())
-            print(self.get_info()['agents'])
+            #print(self.get_info()['agents'])
     
     
     ################### Game Setup ###################
@@ -117,12 +122,14 @@ class BattleGame:
                     loc = random.choice(locations)
                 
                 idx = self.next_agent_id()
-                self.pool.add_agent(idx, state, loc.pos)
+                self.pool.add_agent(idx, copy.copy(state), loc.pos)
                 
         # spread orbs
         free_loc = set([loc for loc in locations if not loc.state.is_blocked])
         for loc in random.sample(free_loc, int(len(free_loc)*self.food_ratio)):
             loc.state.orbs += 1
+            
+        self.info_history.append(self.get_info())
     
     def next_agent_id(self):
         self.next_id += 1
@@ -149,7 +156,7 @@ class BattleGame:
         
     def save_game_state(self, fname: str):
         with open(fname, 'w') as f:
-            json.dump(self.info_history, f, indent=4)
+            json.dump(self.info_history, f, indent=2)
         
         
     
