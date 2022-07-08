@@ -64,7 +64,6 @@ class BattleGame:
         '''Start the simulation.'''
         i = 1
         while not self.is_finished():
-            #print(f'Starting turn {i}.')
             self.step()
             i += 1
             
@@ -125,6 +124,7 @@ class BattleGame:
                 self.pool.add_agent(idx, copy.copy(state), loc.pos)
                 
         # spread orbs
+        random.seed(self.map_seed)
         free_loc = set([loc for loc in locations if not loc.state.is_blocked])
         for loc in random.sample(free_loc, int(len(free_loc)*self.food_ratio)):
             loc.state.orbs += 1
