@@ -108,7 +108,6 @@ class HexMap:
     ############################# Working With Agents #############################
     def agents(self, sortkey: typing.Callable = lambda loc: 0) -> typing.List[AgentID]:
         '''Get locations after filtering and sorting.'''
-        print(self.agent_pos)
         sorted_pos = sorted(self.agent_pos.items(), key=lambda ap: sortkey(ap[1]))
         return [aid for aid,pos in sorted_pos]
 
