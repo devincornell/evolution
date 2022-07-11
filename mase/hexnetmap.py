@@ -92,9 +92,7 @@ class HexNetMap:
         '''Get the location object associated with the agent.'''
         return self.location(self.get_agent_pos(agent))
 
-
     ############################# Manipulating Agents #############################
-
     def move_agent(self, agent: Agent, new_pos: PyHexPosition):
         '''Move the agent to a new location after checking rule.
         '''        
@@ -107,10 +105,23 @@ class HexNetMap:
 
     def add_agent(self, agent: Agent, pos: PyHexPosition):
         '''Add the agent to the map.'''
+        try:
+            hash(agent)
+        except TypeError:
+            raise AgentIsNotHashableError(f'Agent {agent} must be '
+                'hashable to be added to the map.')
+
         if agent in self.agent_pos:
             raise AgentExistsError(f'The agent "{agent}" already exists on this map.')
         self.agent_pos[agent] = pos
         self.location(pos).add_agent(agent)
+
+        # reference the map from the agent
+        try:
+            agent.set_map(self)
+        except AttributeError:
+            raise AgentNotAllowedError(f'Agent {agent} must have '
+                'a set_map() method to be added to the map.')
         
     def remove_agent(self, agent: Agent):
         '''Remove the agent form the map.'''
