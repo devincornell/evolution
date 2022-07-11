@@ -31,6 +31,11 @@ class HexNetMap:
         # create map from postiions to vertices
         self.posmap = {pos:v for pos,v in zip(all_pos, self.graph.vs)}
 
+        # actually add edges
+        for u,v in zip(self.graph.vs, self.graph.vs):
+            if u is not v and u['loc'].pos.dist(v['loc'].pos) == 1:
+                self.graph.add_edge(u,v)
+
     ############################# Dunders #############################    
 
     def __repr__(self) -> str:
@@ -51,10 +56,24 @@ class HexNetMap:
 
     def __contains__(self, pos: PyHexPosition) -> bool:
         return pos in self.posmap
-    
-    ############################# Vertices and Locations #############################    
-    def locations(self) -> Locations:
-        return Locations([v['loc'] for v in self.graph.vs])
+
+    ############################# Helpful for User #############################
+    def nearest_agents(self, pos: PyHexPosition) -> typing.List[Agent]:
+        '''Get agents nearest to the given position.'''
+        sortkey = lambda a: self.get_agent_pos(a).dist(pos)
+        return list(sorted(self.agents, key=sortkey))
+
+    def shortest_path(self, fr: PyHexPosition, to: PyHexPosition, **kwargs) -> typing.List[PyHexPosition]:
+        '''Get the shortest path, a sequence of positions, between fr and to.'''
+        sps = self.graph.get_shortest_paths(self.posmap[fr], to=self.posmap[to])
+        return sps
+
+    ############################# Vertices/Locations/Positions #############################    
+    def positions(self) -> typing.List[PyHexPosition]:
+        return list(self.posmap.keys())
+
+    def locations(self) -> typing.List[Location]:
+        return [v['loc'] for v in self.graph.vs]
     
     def location(self, pos: PyHexPosition) -> Location:
         '''Get location at the desired position.'''

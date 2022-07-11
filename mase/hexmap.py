@@ -6,7 +6,7 @@ import numpy as np
 #from first.agentid import AgentID
 from .agentid import AgentID
 
-from .location import Location, LocationState
+from .location import Location, LocationState, Locations
 from .position import HexPosition
 from .errors import *
 
@@ -88,9 +88,11 @@ class HexMap:
     def positions(self) -> typing.Set[HexPosition]:
         return set(self.locs.keys())
     
-    def locations(self, filter: typing.Callable = lambda loc: True, sortkey: typing.Callable = lambda loc: 0) -> typing.List[HexPosition]:
+    @property
+    def locations(self) -> Locations:
         '''Get locations after filtering and sorting.'''
-        return [loc for loc in sorted(self.locs.values(), key=sortkey) if filter(loc)]
+        #return [loc for loc in sorted(self.locs.values(), key=sortkey) if filter(loc)]
+        return Locations(self.locs.values())
     
     def check_pos(self, pos: HexPosition) -> None:
         '''Check if position is within map, otherwise raise exception.'''
@@ -98,7 +100,7 @@ class HexMap:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
     def region(self, center: HexPosition, dist: int) -> set:
-        '''Get sequence of positions within the given distance.'''
+        '''Get set of positions within the given distance.'''
         return center.neighbors(dist) & set(self.locs.keys())
 
     def region_locs(self, center: HexPosition, dist: int) -> list:

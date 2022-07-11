@@ -16,3 +16,9 @@ class AgentHasNoMapError(Exception):
 
 class MapIsNotAttachedError(Exception):
     pass
+
+class AgentNotAllowedError(Exception):
+    pass
+
+class AgentIsNotHashableError(Exception):
+    pass

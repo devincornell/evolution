@@ -1,6 +1,7 @@
 #from .numpymodelmap import *
 from .location import Location, LocationState
 from .hexmap import HexMap
+from .hexnetmap import HexNetMap
 
 #from .pyhexposition import PyHexPosition
 #from .hexposition import HexPosition

@@ -4,7 +4,7 @@ import dataclasses
 from .errors import *
 from .hexmap import HexMap
 from .position import HexPosition
-from .location import Location
+from .location import Location, Locations
 from .agentid import AgentID
 #from .agentpool import AgentPool
 AgentPoolType = typing.TypeVar('AgentPoolType')
@@ -23,8 +23,7 @@ class Agent:
     '''Represents a single agent in the model. Interface over pool and map.'''
     id: AgentID
     state: AgentState
-    pool: AgentPoolType
-    _map: HexMap
+    _map: HexMap = None
     
     def __pos_init__(self):
         # make sure agent is in map
@@ -59,6 +58,10 @@ class Agent:
     @property
     def map_attached(self):
         return self._map is not None
+
+    def set_map(self, map: HexMap):
+        '''Set the map.'''
+        self._map = map
     
     @property
     def pos(self) -> HexPosition:
@@ -72,13 +75,14 @@ class Agent:
     
     def nearest_agents(self, agent_filter: typing.Callable = lambda agent: True):
         '''Get agents nearest to this agent after filtering criteria.'''
-        sortkey = lambda pos: self.pos.dist(pos)
-        return [self.pool[aid] for aid in self.map.agents(sortkey) if agent_filter(self.pool[aid])]
+        #sortkey = lambda pos: self.pos.dist(pos)
+        #return [self.pool[aid] for aid in self.map.agents(sortkey) if agent_filter(self.pool[aid])]
+        pass
 
-    def nearest_locs(self, loc_filter: typing.Callable = lambda agent: True) -> typing.List[Location]:
+    def nearest_locs(self) -> Locations:
         '''Get locations nearest to this position after filtering criteria.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
-        return self.map.locations(filter=loc_filter, sortkey=sortkey)
+        return self.map.locations(key=sortkey)
 
     def pathfind_dfs(self, target: HexPosition, use_positions: typing.Set[HexPosition]):
         '''Find the first path from source to target using dfs.
