@@ -73,6 +73,13 @@ class Location:
         '''Removes agent to this location.'''
         self.agents.remove(agent_id)
 
+class Locations(typing.List):
+    def __call__(self, **kwargs):
+        return self.__class__(sorted(self, **kwargs))
+    
+    def filter(self, func: typing.Callable):
+        return self.__class__([l for l in self if func(l)])
+
 #@dataclasses.dataclass
 #class LocationView(Location):
 #    '''Can be shared with user without modifying original.'''
