@@ -1,7 +1,7 @@
 import typing
 import dataclasses
 
-from mase.position.pyhexposition import HexPos
+from mase.position import HexPos
 
 from .errors import *
 from .hexmap import HexMap
@@ -39,20 +39,17 @@ class Agent:
         return self.id == other.id
     
     def get_info(self) -> typing.Dict:
-        p, q, r = self.pos.coords()
         return {
             'id': self.id, 
-            #'x': self.pos.x, 
-            #'y': self.pos.x, 
             'xy': self.pos.coords_xy(),
-            #'p': p, 'q': q, 'r': r,
-            'coords': self.pos.coords(),
+            'pqr': self.pos.coords(),
             **self.state.get_info()
         }
     
     ##################### Map Access Functions #####################
     @property
     def map(self):
+        '''Access the attached map or raise exception. For internal use.'''
         if self._map is not None:
             return self._map
         else:
@@ -60,52 +57,49 @@ class Agent:
             
     @property
     def map_attached(self):
+        '''Check if map is attached. For internal use.'''
         return self._map is not None
 
     def set_map(self, map: HexMap):
-        '''Set the map.'''
+        '''Set reference to a map. For internal use.'''
         self._map = map
     
     @property
     def pos(self) -> HexPos:
+        '''Agents current position.'''
         return self.map.get_agent_pos(self.id)
     
     @property
     def loc(self) -> Location:
+        '''Location at Agents current position.'''
         return self.map.get_agent_loc(self.id)
     
     ##################### Utility Functions for User #####################
-    
     def nearest_agents(self):
         '''Get agents nearest to this agent after filtering criteria.'''
-        #sortkey = lambda pos: self.pos.dist(pos)
-        #return [self.pool[aid] for aid in self.map.agents(sortkey) if agent_filter(self.pool[aid])]
         return self.map.nearest_agents(self.pos)
 
-    def nearest_locs(self) -> Locations:
-        '''Get locations nearest to this position after filtering criteria.'''
+    def nearest_locations(self) -> Locations:
+        '''Get locations nearest to this agent.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
         return self.map.locations(key=sortkey)
     
     def shortest_path(self, target: HexPos):
-        '''Get the shortest path between this agent and the target.'''
+        '''Get the shortest path between this agent and the target position.'''
         return self.map.get_shortest_paths(self.pos, target)
-
-    def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
+    
+    ##################### Outdated Pathfinding Functions #####################
+    def depric_pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             use_positions: valid movement positions.
         '''
-        #useset = {self.map.PositionType(*pos) for pos in use_positions}
-        #target_pos = self.map.PositionType(*target)
         return self.pos.pathfind_dfs(target, use_positions)
 
-    def pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPos]):
+    def depric_pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             avoid_positions: set of positions to avoid when pathfinding.
         '''
-        #avoidset = {self.map.PositionType(*pos) for pos in avoid_positions}
-        #target_pos = self.map.PositionType(*target)
         return [pos.coords() for pos in self.pos.pathfind_dfs_avoid(target, avoid_positions)]
 
