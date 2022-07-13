@@ -1,11 +1,11 @@
 import typing
 import dataclasses
 
-from mase.position.pyhexposition import PyHexPosition
+from mase.position.pyhexposition import HexPos
 
 from .errors import *
 from .hexmap import HexMap
-from .position import HexPosition
+from .position import HexPos
 from .location import Location, Locations
 from .agentid import AgentID
 #from .hexnetmap import HexNetMap
@@ -67,7 +67,7 @@ class Agent:
         self._map = map
     
     @property
-    def pos(self) -> HexPosition:
+    def pos(self) -> HexPos:
         return self.map.get_agent_pos(self.id)
     
     @property
@@ -87,11 +87,11 @@ class Agent:
         sortkey = lambda loc: self.pos.dist(loc.pos)
         return self.map.locations(key=sortkey)
     
-    def shortest_path(self, target: PyHexPosition):
+    def shortest_path(self, target: HexPos):
         '''Get the shortest path between this agent and the target.'''
         return self.map.get_shortest_paths(self.pos, target)
 
-    def pathfind_dfs(self, target: HexPosition, use_positions: typing.Set[HexPosition]):
+    def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             use_positions: valid movement positions.
@@ -100,7 +100,7 @@ class Agent:
         #target_pos = self.map.PositionType(*target)
         return self.pos.pathfind_dfs(target, use_positions)
 
-    def pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPosition]):
+    def pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             avoid_positions: set of positions to avoid when pathfinding.

@@ -7,14 +7,14 @@ import numpy as np
 from .agentid import AgentID
 
 from .location import Location, LocationState, Locations
-from .position import HexPosition
+from .position import HexPos
 from .errors import *
 
 class HexMap:
-    locs: typing.Dict[HexPosition, Location]
-    agent_pos: typing.Dict[AgentID, HexPosition]
+    locs: typing.Dict[HexPos, Location]
+    agent_pos: typing.Dict[AgentID, HexPos]
     
-    def __init__(self, radius: int, default_state: LocationState = None, PositionType: type = HexPosition):
+    def __init__(self, radius: int, default_state: LocationState = None, PositionType: type = HexPos):
         '''
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
@@ -46,7 +46,7 @@ class HexMap:
         return copy.deepcopy(self)
     
     ############################# Working With Agents #############################    
-    def add_agent(self, agent_id: AgentID, pos: HexPosition):
+    def add_agent(self, agent_id: AgentID, pos: HexPos):
         '''Add the agent to the map.'''
         self.check_pos(pos)
         if agent_id in self.agent_pos:
@@ -60,7 +60,7 @@ class HexMap:
         loc.agents.remove(agent_id)
         del self.agent_pos[agent_id]
         
-    def move_agent(self, agent_id: AgentID, new_pos: HexPosition):
+    def move_agent(self, agent_id: AgentID, new_pos: HexPos):
         '''Move the agent to a new location after checking rule.
         '''        
         old_loc = self.get_agent_loc(agent_id)
@@ -71,7 +71,7 @@ class HexMap:
         self.agent_pos[agent_id] = new_pos
         
     ############################# Working With Locations #############################
-    def __getitem__(self, pos: HexPosition) -> Location:
+    def __getitem__(self, pos: HexPos) -> Location:
         '''Get location at desired position.'''
         try:
             return self.locs[pos]
@@ -85,7 +85,7 @@ class HexMap:
         return len(self.locs)
     
     @property
-    def positions(self) -> typing.Set[HexPosition]:
+    def positions(self) -> typing.Set[HexPos]:
         return set(self.locs.keys())
     
     @property
@@ -94,16 +94,16 @@ class HexMap:
         #return [loc for loc in sorted(self.locs.values(), key=sortkey) if filter(loc)]
         return Locations(self.locs.values())
     
-    def check_pos(self, pos: HexPosition) -> None:
+    def check_pos(self, pos: HexPos) -> None:
         '''Check if position is within map, otherwise raise exception.'''
         if pos not in self.locs:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
-    def region(self, center: HexPosition, dist: int) -> set:
+    def region(self, center: HexPos, dist: int) -> set:
         '''Get set of positions within the given distance.'''
         return center.neighbors(dist) & set(self.locs.keys())
 
-    def region_locs(self, center: HexPosition, dist: int) -> list:
+    def region_locs(self, center: HexPos, dist: int) -> list:
         '''Get sequence of locations in the given region.'''
         return [self[pos] for pos in self.region(center, dist)]
         

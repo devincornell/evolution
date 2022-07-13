@@ -44,7 +44,7 @@ def test_pathfind(PositionType):
     
 
 if __name__ == '__main__':
-    test_neighbors(mase.PyHexPosition)
-    test_neighbors(mase.CyHexPosition)
-    test_pathfind(mase.PyHexPosition)
-    test_pathfind(mase.CyHexPosition)
+    test_neighbors(mase.HexPos)
+    test_neighbors(mase.CyHexPos)
+    test_pathfind(mase.HexPos)
+    test_pathfind(mase.CyHexPos)

@@ -4,7 +4,7 @@ import typing
 import copy
 
 #from .position import Position
-from .position import HexPosition
+from .position import HexPos
 from .agentid import AgentID
 
 #MapType = typing.TypeVar('MapType')
@@ -23,11 +23,11 @@ class LocationState:
 
 class Location:
     __slots__ = ['pos', 'state', 'agents']
-    pos: HexPosition
+    pos: HexPos
     state: LocationState
     agents: typing.Set[AgentID]
 
-    def __init__(self, pos: HexPosition, state: type = None, agents: typing.Set[AgentID] = None):
+    def __init__(self, pos: HexPos, state: type = None, agents: typing.Set[AgentID] = None):
         '''
         Args:
             state: custom game state.

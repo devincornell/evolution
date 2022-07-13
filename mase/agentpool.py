@@ -5,7 +5,7 @@ import copy
 
 from matplotlib.colors import hexColorPattern
 
-from .position import HexPosition
+from .position import HexPos
 from .hexmap import HexMap
 from .agent import Agent, AgentState
 from .agentid import AgentID
@@ -55,7 +55,7 @@ class AgentPool:
         return self._map is not None
         
     ##################### Add/Remove Functions #####################
-    def add_agent(self, agent_id: AgentID, agent_state: AgentState, pos: HexPosition):
+    def add_agent(self, agent_id: AgentID, agent_state: AgentState, pos: HexPos):
         '''Create new agent and add it to the pool.
         '''
         if agent_id in self.agents:

@@ -4,20 +4,20 @@ import random
 
 if __name__ == '__main__':
     #mm = first.ModelMap(10, 5)
-    start = first.HexPosition(0, 0, 0)
+    start = first.HexPos(0, 0, 0)
 
     avoidset = set([
-        first.HexPosition(-1, 1, 0),
-        first.HexPosition(-2, 2, 0),
-        first.HexPosition(-3, 3, 0),
-        first.HexPosition(-2, 3, -1),
-        first.HexPosition(-1, 3, -2),
-        first.HexPosition(-2, 0, 2),
-        first.HexPosition(-1, -1, 2),
-        first.HexPosition(3, -1, -2),
+        first.HexPos(-1, 1, 0),
+        first.HexPos(-2, 2, 0),
+        first.HexPos(-3, 3, 0),
+        first.HexPos(-2, 3, -1),
+        first.HexPos(-1, 3, -2),
+        first.HexPos(-2, 0, 2),
+        first.HexPos(-1, -1, 2),
+        first.HexPos(3, -1, -2),
     ])
 
-    target = first.HexPosition(-3, 4, -1)
+    target = first.HexPos(-3, 4, -1)
 
     path = start.shortest_path_dfs(target, avoidset)
     pathset = set(path)
@@ -42,9 +42,9 @@ if __name__ == '__main__':
     for r in p.neighbors():
         print(r)
         
-    path = p.pathfind(first.HexPosition(-1, 0, 1), set(), 5)
+    path = p.pathfind(first.HexPos(-1, 0, 1), set(), 5)
     print(path)
-    #center = first.HexPosition(0,0)
+    #center = first.HexPos(0,0)
     
     #print(mm.locs)
     #print(mm[center])

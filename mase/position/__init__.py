@@ -1,10 +1,14 @@
 
-from .pyhexposition import PyHexPosition
-from .pyhexposition import PyHexPosition as HexPosition
+from .hexpos import HexPos
 
-#try: # if CyHexPosition was not compiled, use PyHexPosition as HexPosition
-#    from .cyhexposition import CyHexPosition
-#    from .cyhexposition import CyHexPosition as HexPosition
+try:
+    from .cyhexpos import CyHexPos
+except ImportError:
+    pass
+
+#try: # if CyHexPos was not compiled, use HexPos as HexPos
+#    from .cyhexposition import CyHexPos
+#    from .cyhexposition import CyHexPos as HexPos
 #except ModuleNotFoundError:
 #    pass
     

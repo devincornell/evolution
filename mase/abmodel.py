@@ -2,7 +2,7 @@ import dataclasses
 import typing
 
 from .hexmap import HexMap
-from .position import HexPosition
+from .position import HexPos
 from .agentstatepool import AgentStatePool, AgentID
 
 @dataclasses.dataclass
@@ -33,7 +33,7 @@ class ABModel:
 
         
     #locations
-    #def nearest_agents_base(self, target: HexPosition, agent_criteria: typing.Callable = lambda agent: True):
+    #def nearest_agents_base(self, target: HexPos, agent_criteria: typing.Callable = lambda agent: True):
     #    sort = lambda loc: target.dist(loc)
     #    filt = lambda loc: len(loc.agents)
     #    locs = self.map.locations(filter=filt, sort=sort)

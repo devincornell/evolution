@@ -20,7 +20,7 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
             pass
             
         # the agent can move to any of these positions
-        valid_positions = [loc.pos for loc in game_map.locations(lambda l: not l.state.is_blocked and not len(l.agents))]
+        valid_positions = [l.pos for l in game_map.locations if not l.state.is_blocked and not len(l.agents)]
         
         # check each location that has an orb but no other agents
         for loc in agent.nearest_locs(lambda l: l.state.orbs > 0 and not len(l.agents)):

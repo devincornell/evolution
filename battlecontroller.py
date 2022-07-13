@@ -21,8 +21,8 @@ class Action:
 @dataclasses.dataclass
 class MoveAction(Action):
     agent_id: mase.AgentID
-    new_pos: mase.HexPosition
-    old_pos: mase.HexPosition
+    new_pos: mase.HexPos
+    old_pos: mase.HexPos
     action_type: ActionType = ActionType.MOVE
     
     def get_info(self) -> typing.Dict:
@@ -81,7 +81,7 @@ class BattleController:
         '''Move the agent to a new position.'''
         agent = self.pool[agent_id]
         current_pos = self.map.get_agent_pos(agent_id)
-        #pos = mase.HexPosition(*new_position)
+        #pos = mase.HexPos(*new_position)
         loc = self.map[new_position]
         
         # do some error checking

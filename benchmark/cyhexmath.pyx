@@ -8,7 +8,7 @@ cpdef int test(int x):
         y += i
     return y
 
-cdef class HexPosition:
+cdef class HexPos:
     cdef int q
     cdef int r
     cdef int s
@@ -27,14 +27,14 @@ cpdef list get_offsets(int n):
     return positions
 
 
-#cpdef vector[HexPosition] get_offsets2(int n):
-#    cdef vector[HexPosition] positions
+#cpdef vector[HexPos] get_offsets2(int n):
+#    cdef vector[HexPos] positions
 #    cdef int q, r, s
 #    #positions = list()
 #    for q in range(-n, n+1):
 #        for r in range(max(-n, -q-n), 1+min(n, -q+n)):
 #            s = -q - r
-#            positions.push_back(HexPosition(q,r,s))
+#            positions.push_back(HexPos(q,r,s))
 #    return positions
 
 

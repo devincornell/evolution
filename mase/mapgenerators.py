@@ -1,9 +1,9 @@
 import typing
 import igraph
 
-from .position import PyHexPosition
+from .position import HexPos
 
-def neighbors(self, dist: int = 1) -> typing.Set[PyHexPosition]:
+def neighbors(self, dist: int = 1) -> typing.Set[HexPos]:
     '''Get neighborhood within a given distance.'''
     positions = set()
     for q in range(-dist, dist+1):
