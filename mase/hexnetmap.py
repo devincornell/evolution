@@ -9,7 +9,7 @@ from .errors import *
 from .agent import Agent
 
 class HexNetMap:
-    posmap: typing.Dict[PyHexPosition, igraph.Vertex]
+    pos_vertex: typing.Dict[PyHexPosition, igraph.Vertex]
     agent_pos: typing.Dict[Agent, PyHexPosition]
 
     def __init__(self, radius: int, default_state: LocationState = None):
@@ -29,7 +29,7 @@ class HexNetMap:
         self.graph.vs['loc'] = locs
         
         # create map from postiions to vertices
-        self.posmap = {pos:v for pos,v in zip(all_pos, self.graph.vs)}
+        self.pos_vertex = {pos:v for pos,v in zip(all_pos, self.graph.vs)}
 
         # actually add edges
         for u,v in zip(self.graph.vs, self.graph.vs):
@@ -55,22 +55,22 @@ class HexNetMap:
         return len(self.locs)
 
     def __contains__(self, pos: PyHexPosition) -> bool:
-        return pos in self.posmap
+        return pos in self.pos_vertex
 
     ############################# Helpful for User #############################
     def nearest_agents(self, pos: PyHexPosition) -> typing.List[Agent]:
         '''Get agents nearest to the given position.'''
-        sortkey = lambda a: self.get_agent_pos(a).dist(pos)
+        sortkey = lambda a: pos.dist(self.get_agent_pos(a))
         return list(sorted(self.agents, key=sortkey))
 
     def shortest_path(self, fr: PyHexPosition, to: PyHexPosition, **kwargs) -> typing.List[PyHexPosition]:
         '''Get the shortest path, a sequence of positions, between fr and to.'''
-        sps = self.graph.get_shortest_paths(self.posmap[fr], to=self.posmap[to])
+        sps = self.graph.get_shortest_paths(self.pos_vertex[fr], to=self.pos_vertex[to])
         return sps
 
     ############################# Vertices/Locations/Positions #############################    
     def positions(self) -> typing.List[PyHexPosition]:
-        return list(self.posmap.keys())
+        return list(self.pos_vertex.keys())
 
     def locations(self) -> typing.List[Location]:
         return [v['loc'] for v in self.graph.vs]
@@ -82,7 +82,7 @@ class HexNetMap:
     def vertex(self, pos: PyHexPosition) -> igraph.Vertex:
         '''Get vertex from position.'''
         try:
-            return self.posmap[pos]
+            return self.pos_vertex[pos]
         except KeyError:
             raise OutOfBoundsError(f'The position {pos} is outside this map.')
     
