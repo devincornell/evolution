@@ -1,11 +1,14 @@
 import typing
 import dataclasses
 
+from mase.position.pyhexposition import PyHexPosition
+
 from .errors import *
 from .hexmap import HexMap
 from .position import HexPosition
 from .location import Location, Locations
 from .agentid import AgentID
+#from .hexnetmap import HexNetMap
 #from .agentpool import AgentPool
 AgentPoolType = typing.TypeVar('AgentPoolType')
 #HexMapType = typing.TypeVar('HexMapType')
@@ -73,16 +76,20 @@ class Agent:
     
     ##################### Utility Functions for User #####################
     
-    def nearest_agents(self, agent_filter: typing.Callable = lambda agent: True):
+    def nearest_agents(self):
         '''Get agents nearest to this agent after filtering criteria.'''
         #sortkey = lambda pos: self.pos.dist(pos)
         #return [self.pool[aid] for aid in self.map.agents(sortkey) if agent_filter(self.pool[aid])]
-        pass
+        return self.map.nearest_agents(self.pos)
 
     def nearest_locs(self) -> Locations:
         '''Get locations nearest to this position after filtering criteria.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
         return self.map.locations(key=sortkey)
+    
+    def shortest_path(self, target: PyHexPosition):
+        '''Get the shortest path between this agent and the target.'''
+        return self.map.get_shortest_paths(self.pos, target)
 
     def pathfind_dfs(self, target: HexPosition, use_positions: typing.Set[HexPosition]):
         '''Find the first path from source to target using dfs.

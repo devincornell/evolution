@@ -32,7 +32,7 @@ class HexNetMap:
         self.pos_vertex = {pos:v for pos,v in zip(all_pos, self.graph.vs)}
 
         # actually add edges
-        for u,v in zip(self.graph.vs, self.graph.vs):
+        for u,v in itertools.product(self.graph.vs, self.graph.vs):
             if u is not v and u['loc'].pos.dist(v['loc'].pos) == 1:
                 self.graph.add_edge(u,v)
 
@@ -66,7 +66,8 @@ class HexNetMap:
     def shortest_path(self, fr: PyHexPosition, to: PyHexPosition, **kwargs) -> typing.List[PyHexPosition]:
         '''Get the shortest path, a sequence of positions, between fr and to.'''
         sps = self.graph.get_shortest_paths(self.pos_vertex[fr], to=self.pos_vertex[to])
-        return sps
+        
+        return [[self.graph.vs[ind]['loc'].pos for ind in sp] for sp in sps]
 
     ############################# Vertices/Locations/Positions #############################    
     def positions(self) -> typing.List[PyHexPosition]:
