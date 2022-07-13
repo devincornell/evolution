@@ -1,3 +1,4 @@
+from __future__ import annotations
 import dataclasses
 import mase
 import typing
@@ -40,6 +41,22 @@ class BattleLocationState(mase.LocationState):
     is_blocked: bool
     def get_info(self):
         return {'num_orbs': self.num_orbs, 'is_blocked': self.is_blocked}
+    
+class BattleAgentSet(typing.List):
+    def random_order(self, team_id: int = None) -> BattleAgentSet:
+        '''Get agent ids in a random order.'''
+        if team_id is not None:
+            agents = [a for a in self if a.state.team_id == team_id]
+        else:
+            agents = self
+        
+        return self.__class__(random.sample(agents, len(agents)))
+    
+    def from_team(self, team_id: int) -> BattleAgentSet:
+        '''Get agents of a specific team.'''
+        return self.__class__(a for a in self if a.state.team_id == team_id)
+
+
 
 @dataclasses.dataclass
 class BattleGame:
@@ -54,7 +71,7 @@ class BattleGame:
     next_id: int = 0
     map: mase.HexNetMap = None
     #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
-    agents: typing.List[Agent] = dataclasses.field(default_factory=list)
+    #agents: BattleAgentSet = dataclasses.field(default_factory=BattleAgentSet)
     actions: typing.List[battlecontroller.Action] = dataclasses.field(default_factory=list)
     info_history: typing.List[typing.Dict] = dataclasses.field(default_factory=list)
     
@@ -83,19 +100,18 @@ class BattleGame:
         for team_id, ai in enumerate(self.ai_players):
             
             # prepare interface for AI to use
-            #new_map = self.map.deepcopy()
-            #new_pool = self.pool.deepcopy()
-            #ai_controller = battlecontroller.BattleController(team_id, new_map, new_pool)
-            ctrlr = battlecontroller.BattleController(team_id, self.map)
+            new_map = copy.deepcopy(self.map)
+            ai_controller = battlecontroller.BattleController(team_id, new_map)
+            agents = BattleAgentSet(new_map.agents)
             
             # execute AI for this turn
             #ai(team_id, new_map, new_pool, ctrlr)
-            ai(team_id, self.map, self.map.agents, ctrlr)
+            ai(team_id, new_map, agents, ai_controller)
             
             # get user actions and apply them to real map and pool
             #game_controller = battlecontroller.BattleController(team_id, self.map, self.pool)
             #game_controller.apply_actions(ai_controller.get_actions())
-            self.actions.append(ctrlr.get_actions())
+            self.actions.append(ai_controller.get_actions())
             
             # save info about the game state after each turn
             self.info_history.append(self.get_info())
