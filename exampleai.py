@@ -14,7 +14,7 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
         # if agent is standing on an orb, consume it. otherwise, try to attack
         try:
             attack_if_near(team_id, agent, controller)
-            if agent.loc.state.orbs > 0:
+            if agent.loc.state.num_orbs > 0:
                 controller.consume(agent.id)
         except OutOfActionsError:
             pass
@@ -23,7 +23,7 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
         valid_positions = [l.pos for l in game_map.locations if not l.state.is_blocked and not len(l.agents)]
         
         # check each location that has an orb but no other agents
-        for loc in agent.nearest_locs(lambda l: l.state.orbs > 0 and not len(l.agents)):
+        for loc in agent.nearest_locs(lambda l: l.state.num_orbs > 0 and not len(l.agents)):
             path = agent.pathfind_dfs(loc.pos, valid_positions)
             
             # this means that there is a path
@@ -36,7 +36,7 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
         
         try:
             attack_if_near(team_id, agent, controller)
-            if agent.loc.state.orbs > 0:
+            if agent.loc.state.num_orbs > 0:
                 controller.consume(agent.id)
         except OutOfActionsError:
             pass
@@ -54,7 +54,7 @@ def attack_consume(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
             # try to attack before doing anything else
             try:
                 attack_if_near(team_id, agent, controller)
-                if agent.loc.state.orbs > 0:
+                if agent.loc.state.num_orbs > 0:
                     controller.consume(agent.id)
             except OutOfActionsError:
                 pass
@@ -72,7 +72,7 @@ def attack_consume(team_id: int, game_map: mase.HexMap, agents: mase.AgentPool, 
             
             try:
                 attack_if_near(team_id, agent, controller)
-                if agent.loc.state.orbs > 0:
+                if agent.loc.state.num_orbs > 0:
                     controller.consume(agent.id)
             except OutOfActionsError:
                 pass

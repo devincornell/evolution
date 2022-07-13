@@ -25,3 +25,6 @@ class NoOrbsAtLocationError(Exception):
 class ActionNotRecognizedError(Exception):
     pass
 
+class AgentHasBeenKilledError(Exception):
+    pass
+

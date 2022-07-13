@@ -9,6 +9,7 @@ import copy
 
 #from battlecontroller import BattleController
 import battlecontroller
+from mase.agent import Agent
 
 @dataclasses.dataclass
 class BattleAgentState(mase.AgentState):
@@ -35,10 +36,10 @@ class BattleAgentState(mase.AgentState):
     
 @dataclasses.dataclass
 class BattleLocationState(mase.LocationState):
-    orbs: int
+    num_orbs: int
     is_blocked: bool
     def get_info(self):
-        return {'orbs': self.orbs, 'is_blocked': self.is_blocked}
+        return {'num_orbs': self.num_orbs, 'is_blocked': self.is_blocked}
 
 @dataclasses.dataclass
 class BattleGame:
@@ -46,13 +47,14 @@ class BattleGame:
     ai_players: typing.List[typing.Callable]
     map_radius: int
     blocked_ratio: float
-    food_ratio: float
+    orb_ratio: float
     num_start_warriors: int
     map_seed: int = 0
     max_turns: int = 100
     next_id: int = 0
-    map: mase.HexMap = None
-    pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
+    map: mase.HexNetMap = None
+    #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
+    agents: typing.List[Agent] = dataclasses.field(default_factory=list)
     actions: typing.List[battlecontroller.Action] = dataclasses.field(default_factory=list)
     info_history: typing.List[typing.Dict] = dataclasses.field(default_factory=list)
     
@@ -71,12 +73,11 @@ class BattleGame:
                 break
         
     def is_finished(self):
-        return len(set([a.state.team_id for a in self.pool])) <= 1
+        return len(set([a.state.team_id for a in self.map.agents])) <= 1
         
     def get_winner(self):
-        team_id = next(iter(self.pool)).state.team_id
+        team_id = next(iter(self.map.agents)).state.team_id
         return self.ai_players[team_id]
-        
         
     def step(self):
         for team_id, ai in enumerate(self.ai_players):
@@ -85,11 +86,11 @@ class BattleGame:
             #new_map = self.map.deepcopy()
             #new_pool = self.pool.deepcopy()
             #ai_controller = battlecontroller.BattleController(team_id, new_map, new_pool)
-            ctrlr = battlecontroller.BattleController(team_id, self.map, self.pool)
+            ctrlr = battlecontroller.BattleController(team_id, self.map)
             
             # execute AI for this turn
             #ai(team_id, new_map, new_pool, ctrlr)
-            ai(team_id, self.map, self.pool, ctrlr)
+            ai(team_id, self.map, self.map.agents, ctrlr)
             
             # get user actions and apply them to real map and pool
             #game_controller = battlecontroller.BattleController(team_id, self.map, self.pool)
@@ -104,31 +105,30 @@ class BattleGame:
     ################### Game Setup ###################
     def setup(self):
         '''Set up actual game.'''
+        random.seed(self.map_seed)
+        
         self.map = self.generate_random_map()
-        self.pool.add_map(self.map)
-        locations = self.map.locations()
+        positions = self.map.positions()
         
         # set up agents
         for _ in range(self.num_start_warriors):
             for team_id, player in enumerate(self.ai_players):
                 
                 # create a new agent and add it to the pool
-                state = BattleAgentState(team_id)
+                agent = mase.Agent(self.next_agent_id(), BattleAgentState(team_id), _map=self.map)
                 
                 # put agent in free, non-blocked location
-                loc = random.choice(locations)
+                loc = random.choice()
                 while loc.state.is_blocked or len(loc.agents):
-                    loc = random.choice(locations)
-                
-                idx = self.next_agent_id()
-                self.pool.add_agent(idx, copy.copy(state), loc.pos)
+                    pos = random.choice(positions)
+                    self.map.add_agent(agent, pos)
                 
         # spread orbs
-        random.seed(self.map_seed)
-        free_loc = set([loc for loc in locations if not loc.state.is_blocked])
-        for loc in random.sample(free_loc, int(len(free_loc)*self.food_ratio)):
-            loc.state.orbs += 1
-            
+        free_loc = set([loc for loc in self.map.locations() if not loc.state.is_blocked])
+        for loc in random.sample(free_loc, int(len(free_loc)*self.orb_ratio)):
+            loc.state.num_orbs += 1
+        
+        # add initial game state to history
         self.info_history.append(self.get_info())
     
     def next_agent_id(self):
@@ -140,7 +140,6 @@ class BattleGame:
         game_map = mase.HexMap(self.map_radius, default_state = BattleLocationState(0, False))
         
         # block off some areas of the map
-        random.seed(self.map_seed)
         blocked_pos = random.sample(game_map.positions, int(len(game_map)*self.blocked_ratio))
         for pos in blocked_pos:
             game_map[pos].state.is_blocked = True
@@ -150,11 +149,12 @@ class BattleGame:
     def get_info(self):
         return {
             'actions': [[a.get_info() for a in tactions] for tactions in self.actions],
-            'agents': self.pool.get_info(),
+            'agents': [a.get_info() for a in self.map.agents],
             'map': self.map.get_info(),
         }
         
     def save_game_state(self, fname: str):
+        '''Save the game to disk for replay later.'''
         with open(fname, 'w') as f:
             json.dump(self.info_history, f, indent=2)
         

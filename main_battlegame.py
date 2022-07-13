@@ -1,14 +1,14 @@
 import battlegame
 import exampleai
 import mase
-from mase.position.pyhexposition import HexPos
+#from mase.position.pyhexposition import HexPos
 
 def run_game(seed):
     game = battlegame.BattleGame(
         ai_players = [exampleai.consume_attack, exampleai.attack_consume],
         map_radius = 8,
         blocked_ratio = 0.2,
-        food_ratio = 0.01,
+        orb_ratio = 0.01,
         num_start_warriors = 3,
         map_seed=seed, 
         max_turns=500,
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     print(hexmap)
     print(len(hexmap.graph.es))
     hexmap.graph.write_graphml('tmp/mynet.graphml')
-    sp = hexmap.shortest_path(HexPos(0,0,0), HexPos(-2,1,1))
+    sp = hexmap.shortest_path(mase.HexPos(0,0,0), mase.HexPos(-3, 3, 0))
     print(sp)
     exit()
     
