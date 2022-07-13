@@ -66,8 +66,8 @@ class HexNetMap:
     def shortest_path(self, fr: HexPos, to: HexPos, **kwargs) -> typing.List[HexPos]:
         '''Get the shortest path, a sequence of positions, between fr and to.'''
         sps = self.graph.get_shortest_paths(self.pos_vertex[fr], to=self.pos_vertex[to])
-        
-        return [[self.graph.vs[ind]['loc'].pos for ind in sp] for sp in sps]
+        #return [[self.graph.vs[ind]['loc'].pos for ind in sp] for sp in sps]
+        return [self.graph.vs[ind]['loc'].pos for ind in sps[0]]
 
     ############################# Vertices/Locations/Positions #############################    
     def positions(self) -> typing.List[HexPos]:
