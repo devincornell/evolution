@@ -36,7 +36,7 @@ def run_game(seed):
 
 if __name__ == '__main__':
     
-    hexmap = mase.HexNetMap(10)
+    hexmap = mase.HexMap(10)
     print(hexmap)
     print(len(hexmap.graph.es))
     hexmap.graph.write_graphml('tmp/mynet.graphml')

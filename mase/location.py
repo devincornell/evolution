@@ -5,7 +5,8 @@ import copy
 
 #from .position import Position
 from .position import HexPos
-from .agentid import AgentID
+#from .agentid import AgentID
+from .agent import Agent, AgentSet
 
 #MapType = typing.TypeVar('MapType')
 
@@ -25,34 +26,27 @@ class Location:
     __slots__ = ['pos', 'state', 'agents']
     pos: HexPos
     state: LocationState
-    agents: typing.Set[AgentID]
+    agents: AgentSet
 
-    def __init__(self, pos: HexPos, state: type = None, agents: typing.Set[AgentID] = None):
+    def __init__(self, pos: HexPos, state: type = None, agents: AgentSet = None):
         '''
         Args:
             state: custom game state.
         '''
         self.pos = pos
         self.state = copy.copy(state) if state is not None else None
-        self.agents = set(copy.copy(agents)) if agents is not None else set()
+        self.agents = AgentSet(copy.copy(agents)) if agents is not None else AgentSet()
         
     def __repr__(self):
         return f'{self.__class__.__name__}(pos={self.pos}, state={self.state}, agents={self.agents})'
         
     ############################# Working With Resources #############################    
-    def __contains__(self, agent_id: AgentID):
+    def __contains__(self, agent: Agent) -> bool:
         '''Check if this location contains the agent.'''
-        return agent_id in self.agents
+        return agent in self.agents
         
-    ############################# Utility #############################
-    #def get_view(self) -> LocationView:
-    #    '''Get a view of the current location without any methods.'''
-    #    # use deepcopy on state since the game might deside that
-    #    return LocationView(self.pos.coords(), self.state.as_view(), self.agents.copy())
-    def deepcopy(self):
-        return copy.deepcopy(self)
-    
-    def get_info(self) -> typing.List[dict]:
+    ############################# Utility #############################    
+    def get_info(self) -> typing.Dict:
         '''Get a dict of info about this location.'''
         q, r, s = self.pos.coords()
         return {
@@ -65,13 +59,13 @@ class Location:
         }
     
     ############################# Working With Agents #############################
-    def add_agent(self, agent_id: AgentID):
+    def add_agent(self, agent: Agent):
         '''Adds agent to this location.'''
-        self.agents.add(agent_id)
+        self.agents.add(agent)
         
-    def remove_agent(self, agent_id: AgentID):
+    def remove_agent(self, agent: Agent):
         '''Removes agent to this location.'''
-        self.agents.remove(agent_id)
+        self.agents.remove(agent)
 
 class Locations(typing.List):
     def __call__(self, **kwargs):

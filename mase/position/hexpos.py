@@ -1,4 +1,5 @@
 # distutils: language = c++
+from __future__ import annotations
 
 #%%cython
 
@@ -9,11 +10,12 @@ import math
 #from libcpp.set cimport set as cpp_set
 #cimport libcpp.set.set
 from .errors import *
+from .position import Position
 #from libc.math cimport sin
 
 import time
 
-class HexPos:
+class HexPos(Position):
 
     def __init__(self, q: int, r: int, s: int):
         self.q = q
@@ -38,11 +40,9 @@ class HexPos:
         return (self.q, self.r, self.s)
 
     def __eq__(self, other):
-        #return self.q == other.q and self.r == other.r and self.s == other.s
         return self.coords() == other.coords()
 
     def __repr__(self):
-        #return f'{self.__class__.__name__}({self.q}, {self.r}, {self.s})'
         return f'{self.coords()}'
 
     def dist(self, other):
@@ -52,7 +52,7 @@ class HexPos:
         '''Get a new object with the specified offset coordinates.'''
         return self.__class__(self.q+offset_q, self.r+offset_r, self.s+offset_s)
 
-    def neighbors(self, dist: int = 1) -> set:
+    def neighbors(self, dist: int = 1) -> typing.Set[HexPos]:
         '''Get neighborhood within a given distance.'''
         positions = set()
         for q in range(-dist, dist+1):
@@ -62,60 +62,15 @@ class HexPos:
                     positions.add(self.offset(q,r,s))
         return positions
 
-    def sorted_neighbors(self, target, dist: int = 1):
+    def sorted_neighbors(self, target, dist: int = 1) -> typing.List[HexPos]:
         '''Return direct neighbors sorted by distance from target.'''
-        return sorted(self.neighbors(dist), key=lambda n: target.dist(n))
+        return list(sorted(self.neighbors(dist), key=lambda n: target.dist(n)))
+    
+    
 
-    def pathfind_dfs_avoid(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
+    def pathfind_dfs(self, target, useset: typing.Set[HexPos] = None, 
+            max_dist: int = None, verbose: bool = False) -> typing.List[HexPos]:
         '''Heuristic-based pathfinder. May not be shortest path.'''
-        if target in avoidset:
-            raise TargetInAvoidSet(f'Target {target} was found in avoidset.')
-        
-        if max_dist is None:
-            max_dist = 1e9 # real big
-        
-        if self.dist(target) > max_dist:
-            raise ValueError(f'Target {self}->{target} (dist={self.dist(target)}) is outside maximum distance of {max_dist}.')
-
-        avoidset = set(avoidset)
-        visited = set([self])
-        current_path: typing.List[self.__class__] = [self]
-
-        finished = False
-        while not finished:
-            if verbose: print(f'status: {current_path}, {visited}')
-            found_next = False
-            for neighbor in current_path[-1].sorted_neighbors(target):
-                if neighbor == target:
-                    if verbose: print(f'found target {target}.')
-                    current_path.append(neighbor)
-                    found_next = True
-                    finished = True
-                    break
-                    #return current_path + [neighbor]
-                elif neighbor not in avoidset and neighbor not in visited and self.dist(neighbor) <= max_dist:
-                    current_path.append(neighbor)
-                    visited.add(neighbor)
-                    found_next = True
-                    break
-            
-            # if none of these options are valid
-            if not finished and not found_next:
-                if verbose: print(f'reached dead end at {current_path[-1]}.')
-                visited.add(neighbor)
-                current_path.pop()
-
-            if not len(current_path):
-                return None
-
-            if verbose: print('--------------------------------\n')
-            
-        return current_path
-
-    def pathfind_dfs(self, target, useset: set = None, max_dist: int = None, verbose: bool = False):
-        '''Heuristic-based pathfinder. May not be shortest path.'''
-        #if target not in useset:
-        #    raise TargetNotInUseSet(f'Target {target} was not found in useset.')
         
         if max_dist is None:
             max_dist = 1e9 # real big
@@ -185,4 +140,48 @@ class HexPos:
             fringe |= pos.neighbors(dist)
         return fringe - others
 
+    def depric_pathfind_dfs_avoid(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
+        '''Heuristic-based pathfinder. May not be shortest path.'''
+        if target in avoidset:
+            raise TargetInAvoidSet(f'Target {target} was found in avoidset.')
+        
+        if max_dist is None:
+            max_dist = 1e9 # real big
+        
+        if self.dist(target) > max_dist:
+            raise ValueError(f'Target {self}->{target} (dist={self.dist(target)}) is outside maximum distance of {max_dist}.')
 
+        avoidset = set(avoidset)
+        visited = set([self])
+        current_path: typing.List[self.__class__] = [self]
+
+        finished = False
+        while not finished:
+            if verbose: print(f'status: {current_path}, {visited}')
+            found_next = False
+            for neighbor in current_path[-1].sorted_neighbors(target):
+                if neighbor == target:
+                    if verbose: print(f'found target {target}.')
+                    current_path.append(neighbor)
+                    found_next = True
+                    finished = True
+                    break
+                    #return current_path + [neighbor]
+                elif neighbor not in avoidset and neighbor not in visited and self.dist(neighbor) <= max_dist:
+                    current_path.append(neighbor)
+                    visited.add(neighbor)
+                    found_next = True
+                    break
+            
+            # if none of these options are valid
+            if not finished and not found_next:
+                if verbose: print(f'reached dead end at {current_path[-1]}.')
+                visited.add(neighbor)
+                current_path.pop()
+
+            if not len(current_path):
+                return None
+
+            if verbose: print('--------------------------------\n')
+            
+        return current_path

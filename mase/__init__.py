@@ -8,7 +8,7 @@ from .hexnetmap import HexNetMap
 from .hexmapgenerator import *
 from .agentstatepool import AgentStatePool
 from .agentid import AgentID
-from .agent import Agent, AgentState
+from .agent import Agent, AgentState, AgentSet
 from .agentpool import AgentPool
 
 #from .agentstate import AgentState, AgentID

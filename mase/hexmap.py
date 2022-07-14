@@ -4,130 +4,113 @@ import typing
 import numpy as np
 
 #from first.agentid import AgentID
-from .agentid import AgentID
+#from .agentid import AgentID
+from .agent import Agent
 
 from .location import Location, LocationState, Locations
 from .position import HexPos
 from .errors import *
 
 class HexMap:
-    locs: typing.Dict[HexPos, Location]
-    agent_pos: typing.Dict[AgentID, HexPos]
+    pos_loc: typing.Dict[HexPos, Location]
+    agent_positions: typing.Dict[Agent, HexPos]
     
-    def __init__(self, radius: int, default_state: LocationState = None, PositionType: type = HexPos):
+    def __init__(self, radius: int, default_loc_state: LocationState = None):
         '''
         Args:
             movement_rule: function accepting three arguments: agent, current location, future location.
         '''
         self.radius = radius
-        self.PositionType = PositionType
 
-        self.locs = dict()
-        self.agent_pos = dict()
+        self.pos_loc = dict()
+        self.agent_positions = dict()
 
-        center = self.PositionType(0, 0, 0)
+        center = HexPos(0, 0, 0)
         valid_pos = center.neighbors(radius)
         valid_pos.add(center)
         self.border_pos = center.neighbors(radius+1) - valid_pos
         for pos in valid_pos:
-            self.locs[pos] = Location(pos, state=copy.deepcopy(default_state))
+            self.pos_loc[pos] = Location(pos, state=copy.deepcopy(default_loc_state))
+    
+    ############################# Dunders #############################    
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(size={self.radius})'
-    
-    
-    ############################# Views #############################    
-    #def get_view(self):
-    #    '''Create a view that the user cannot modify.'''
-    #    locs = {pos.coords():loc.get_view() for pos,loc in self.locs.items()}
-    #    agent_pos = {aid:pos.coords() for aid,pos in self.agent_pos.items()}
-    #    return HexMapView(locs=locs, agent_pos=agent_pos, PositionType=self.PositionType)
-    def deepcopy(self):
-        return copy.deepcopy(self)
-    
-    ############################# Working With Agents #############################    
-    def add_agent(self, agent_id: AgentID, pos: HexPos):
-        '''Add the agent to the map.'''
-        self.check_pos(pos)
-        if agent_id in self.agent_pos:
-            raise AgentExistsError(f'The agent "{agent_id}" already exists on this map.')
-        self.agent_pos[agent_id] = pos
-        self.locs[pos].agents.add(agent_id)
-        
-    def remove_agent(self, agent_id: AgentID):
-        '''Remove the agent form the map.'''
-        loc = self.get_agent_loc(agent_id)
-        loc.agents.remove(agent_id)
-        del self.agent_pos[agent_id]
-        
-    def move_agent(self, agent_id: AgentID, new_pos: HexPos):
-        '''Move the agent to a new location after checking rule.
-        '''        
-        old_loc = self.get_agent_loc(agent_id)
-        new_loc = self[new_pos]
-                        
-        old_loc.remove_agent(agent_id)
-        new_loc.add_agent(agent_id)
-        self.agent_pos[agent_id] = new_pos
-        
-    ############################# Working With Locations #############################
+
     def __getitem__(self, pos: HexPos) -> Location:
-        '''Get location at desired position.'''
+        return self.loc(pos)
+
+    def __contains__(self, agent: Agent) -> bool:
+        '''Check if the agent is on the map.'''
+        return agent in self.agent_positions
+    
+    def __iter__(self) -> iter:
+        return iter(self.pos_loc.values())
+    
+    def __len__(self) -> int:
+        return len(self.pos_loc)
+
+    def __contains__(self, pos: HexPos) -> bool:
+        return pos in self.pos_loc
+    
+    ############################# Access/Lookup Locations/Positions/Agents #############################
+    def loc(self, pos: HexPos) -> Location:
+        '''Get the location at a given position.'''
         try:
-            return self.locs[pos]
+            return self.pos_loc[pos]
         except KeyError:
             raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
-    def __iter__(self):
-        return iter(self.locs.values())
+    def agent_loc(self, agent: Agent) -> Location:
+        '''Get the location of the provided agent.'''
+        return self.loc(self.agent_pos(agent))
     
-    def __len__(self):
-        return len(self.locs)
-    
+    def agent_pos(self, agent: Agent) -> HexPos:
+        '''Get the location of the provided agent.'''
+        try:
+            return self.agent_positions[agent]
+        except KeyError:
+            raise AgentDoesNotExistError(f'Agent {agent.id} does not exist on the map.')
+        
     @property
     def positions(self) -> typing.Set[HexPos]:
-        return set(self.locs.keys())
+        return set(self.pos_loc.keys())
     
     @property
     def locations(self) -> Locations:
         '''Get locations after filtering and sorting.'''
-        #return [loc for loc in sorted(self.locs.values(), key=sortkey) if filter(loc)]
-        return Locations(self.locs.values())
+        return Locations(self.pos_loc.values())
     
-    def check_pos(self, pos: HexPos) -> None:
-        '''Check if position is within map, otherwise raise exception.'''
-        if pos not in self.locs:
-            raise OutOfBoundsError(f'{pos} is out of bounds for map {self}.')
     
+    ############################# Location Lookups #############################
     def region(self, center: HexPos, dist: int) -> set:
         '''Get set of positions within the given distance.'''
-        return center.neighbors(dist) & set(self.locs.keys())
+        return center.neighbors(dist) & set(self.pos_loc.keys())
 
     def region_locs(self, center: HexPos, dist: int) -> list:
         '''Get sequence of locations in the given region.'''
-        return [self[pos] for pos in self.region(center, dist)]
+        return [self.loc(pos) for pos in self.region(center, dist)]
+
+    ############################# Manipulate Agents #############################
+    
+    def add_agent(self, agent: Agent, pos: HexPos):
+        '''Add the agent to the map.'''
+        if agent in self.agent_positions:
+            raise AgentExistsError(f'The agent "{agent.id}" already exists on this map.')
+        self.loc(pos).agents.add(agent)
+        self.agent_positions[agent] = pos
         
-    ############################# Working With Agents #############################
-    def agents(self, sortkey: typing.Callable = lambda loc: 0) -> typing.List[AgentID]:
-        '''Get locations after filtering and sorting.'''
-        sorted_pos = sorted(self.agent_pos.items(), key=lambda ap: sortkey(ap[1]))
-        return [aid for aid,pos in sorted_pos]
-
-    def __contains__(self, agent_id: AgentID):
-        '''Check if the agent is on the map.'''
-        return agent_id in self.agent_pos
-    
-    def get_agent_pos(self, agent_id: AgentID):
-        '''Get position of the provided agent.'''
-        try:
-            return self.agent_pos[agent_id]
-        except KeyError:
-            raise AgentDoesNotExistError('This agent does not exist on the map.')
-
-    def get_agent_loc(self, agent_id: AgentID) -> Location:
-        '''Get the location object associated with teh agent.'''
-        return self.locs[self.get_agent_pos(agent_id)]
-    
+    def remove_agent(self, agent: Agent):
+        '''Remove the agent form the map.'''
+        self.agent_loc(agent).agents.remove(agent)
+        del self.agent_positions[agent]
+        
+    def move_agent(self, agent: Agent, new_pos: HexPos):
+        '''Move the agent to a new location after checking rule.
+        '''        
+        self.remove_agent(agent)
+        self.add_agent(agent, new_pos)
+            
     ############################# Other Helpers #############################
     def get_info(self) -> typing.List[dict]:
         '''Get dictionary information about each location.'''

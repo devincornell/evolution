@@ -17,7 +17,6 @@ class AgentPool:
     agents: typing.Dict[AgentID, Agent] = dataclasses.field(default_factory=dict)
     _map: HexMap = None
     
-    
     ##################### Access to Agents #####################
     def __contains__(self, agent_id: AgentID):
         return agent_id in self.agents

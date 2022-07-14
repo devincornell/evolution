@@ -69,7 +69,7 @@ class BattleGame:
     map_seed: int = 0
     max_turns: int = 100
     next_id: int = 0
-    map: mase.HexNetMap = None
+    map: mase.HexMap = None
     #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
     #agents: BattleAgentSet = dataclasses.field(default_factory=BattleAgentSet)
     actions: typing.List[battlecontroller.Action] = dataclasses.field(default_factory=list)

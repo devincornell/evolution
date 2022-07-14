@@ -69,7 +69,7 @@ class HexNetMap:
         #return [[self.graph.vs[ind]['loc'].pos for ind in sp] for sp in sps]
         return [self.graph.vs[ind]['loc'].pos for ind in sps[0]]
 
-    ############################# Vertices/Locations/Positions #############################    
+    ############################# Vertices/Locations/Positions #############################
     def positions(self) -> typing.List[HexPos]:
         return list(self.pos_vertex.keys())
 

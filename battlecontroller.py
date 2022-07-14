@@ -71,7 +71,7 @@ class ConsumeAction(Action):
 class BattleController:
     '''This acts like the "Controller" for the game.'''
     team_id: int
-    map: mase.HexNetMap
+    map: mase.HexMap
     #pool: mase.AgentStatePool
     agent_lookup: typing.Dict[AgentID,Agent] = dataclasses.field(default_factory=dict)
     action_sequence: list = dataclasses.field(default_factory=list)

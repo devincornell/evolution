@@ -1,7 +1,8 @@
 import typing
 import dataclasses
+import agent
 
-from mase.position import HexPos
+#from mase.position import HexPos
 
 from .errors import *
 from .hexmap import HexMap
@@ -67,12 +68,12 @@ class Agent:
     @property
     def pos(self) -> HexPos:
         '''Agents current position.'''
-        return self.map.get_agent_pos(self.id)
+        return self.map.agent_pos(self.id)
     
     @property
     def loc(self) -> Location:
         '''Location at Agents current position.'''
-        return self.map.get_agent_loc(self.id)
+        return self.map.agent_loc(self.id)
     
     ##################### Utility Functions for User #####################
     def nearest_agents(self):
@@ -102,4 +103,11 @@ class Agent:
             avoid_positions: set of positions to avoid when pathfinding.
         '''
         return [pos.coords() for pos in self.pos.pathfind_dfs_avoid(target, avoid_positions)]
+
+
+class AgentSet(typing.Set[Agent]):
+    def random_activation(self) -> typing.List[Agent]:
+        '''Get agents in a random order.'''        
+        return list(random.sample(list(self), len(self)))
+
 
