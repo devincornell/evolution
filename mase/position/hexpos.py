@@ -62,13 +62,12 @@ class HexPos(Position):
                     positions.add(self.offset(q,r,s))
         return positions
 
-    def sorted_neighbors(self, target, dist: int = 1) -> typing.List[HexPos]:
+    def sorted_neighbors(self, target: HexPos, dist: int = 1) -> typing.List[HexPos]:
         '''Return direct neighbors sorted by distance from target.'''
         return list(sorted(self.neighbors(dist), key=lambda n: target.dist(n)))
     
-    
 
-    def pathfind_dfs(self, target, useset: typing.Set[HexPos] = None, 
+    def pathfind_dfs(self, target: HexPos, useset: typing.Set[HexPos] = None, 
             max_dist: int = None, verbose: bool = False) -> typing.List[HexPos]:
         '''Heuristic-based pathfinder. May not be shortest path.'''
         
@@ -114,7 +113,7 @@ class HexPos(Position):
         return current_path
 
 
-    def shortest_path_length(self, target, avoidset: set) -> int:
+    def shortest_path_length(self, target: HexPos, avoidset: set) -> int:
         '''Calculate number of steps required to reach target.'''
         if target in avoidset:
             raise TargetInAvoidSet(f'Target {target} was found in avoidset.')
@@ -132,7 +131,7 @@ class HexPos(Position):
             else:
                 visited |= fringe
     
-    def fringe(self, others, dist: int = 1):
+    def fringe(self, others: typing.Set[HexPos], dist: int = 1) -> typing.Set[HexPos]:
         '''Get positions on the fringe of the provided nodes.'''
         others = others | set([self])
         fringe = set()
@@ -140,7 +139,7 @@ class HexPos(Position):
             fringe |= pos.neighbors(dist)
         return fringe - others
 
-    def depric_pathfind_dfs_avoid(self, target, avoidset: set = None, max_dist: int = None, verbose: bool = False):
+    def pathfind_dfs_avoid(self, target: HexPos, avoidset: set = None, max_dist: int = None, verbose: bool = False) -> typing.List[HexPos]:
         '''Heuristic-based pathfinder. May not be shortest path.'''
         if target in avoidset:
             raise TargetInAvoidSet(f'Target {target} was found in avoidset.')

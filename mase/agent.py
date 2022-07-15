@@ -1,17 +1,23 @@
+from __future__ import annotations
+
 import typing
 import dataclasses
-import agent
+import random
 
+if typing.TYPE_CHECKING:
+    from .hexmap import HexMap
+    from .location import Location, Locations
 #from mase.position import HexPos
 
 from .errors import *
-from .hexmap import HexMap
+
 from .position import HexPos
-from .location import Location, Locations
+#
 from .agentid import AgentID
 #from .hexnetmap import HexNetMap
 #from .agentpool import AgentPool
-AgentPoolType = typing.TypeVar('AgentPoolType')
+#AgentPoolType = typing.TypeVar('AgentPoolType')
+#LocationType = typing.TypeVar('LocationType')
 #HexMapType = typing.TypeVar('HexMapType')
 
 
@@ -49,7 +55,7 @@ class Agent:
     
     ##################### Map Access Functions #####################
     @property
-    def map(self):
+    def map(self) -> HexMap:
         '''Access the attached map or raise exception. For internal use.'''
         if self._map is not None:
             return self._map
@@ -76,33 +82,36 @@ class Agent:
         return self.map.agent_loc(self.id)
     
     ##################### Utility Functions for User #####################
-    def nearest_agents(self):
+    def pathfind_dfs(self, target: HexPos, use_loc: typing.Callable = None, max_dist: int = None):
+        '''Apply pathfinding algorithm where use_loc is used to determine '
+            whether a location is traversable.
+        '''
+        return self.map.pathfind_dfs(src=self.pos, target=target, use_loc=use_loc, max_dist=max_dist)
+    
+    def nearest_agents(self) -> AgentSet:
         '''Get agents nearest to this agent after filtering criteria.'''
-        return self.map.nearest_agents(self.pos)
+        sortkey = lambda a: self.pos.dist(a.pos)
+        return [a for a in sorted(self.map.agents, key=sortkey) if a != self]
 
-    def nearest_locations(self) -> Locations:
+    def nearest_locations(self) -> Location:
         '''Get locations nearest to this agent.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
-        return self.map.locations(key=sortkey)
-    
-    def shortest_path(self, target: HexPos):
-        '''Get the shortest path between this agent and the target position.'''
-        return self.map.get_shortest_paths(self.pos, target)
-    
-    ##################### Outdated Pathfinding Functions #####################
-    def depric_pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
+        return list(sorted(self.map.locations, key=sortkey))
+        
+    ##################### Pathfinding Functions #####################
+    def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             use_positions: valid movement positions.
         '''
         return self.pos.pathfind_dfs(target, use_positions)
 
-    def depric_pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPos]):
+    def pathfind_dfs_avoid(self, target: tuple, avoid_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
             avoid_positions: set of positions to avoid when pathfinding.
         '''
-        return [pos.coords() for pos in self.pos.pathfind_dfs_avoid(target, avoid_positions)]
+        return self.pos.pathfind_dfs_avoid(target, avoid_positions)
 
 
 class AgentSet(typing.Set[Agent]):

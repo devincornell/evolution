@@ -42,8 +42,8 @@ class BattleLocationState(mase.LocationState):
     def get_info(self):
         return {'num_orbs': self.num_orbs, 'is_blocked': self.is_blocked}
     
-class BattleAgentSet(typing.List):
-    def random_order(self, team_id: int = None) -> BattleAgentSet:
+class BattleAgentList(typing.List):
+    def random_order(self, team_id: int = None) -> BattleAgentList:
         '''Get agent ids in a random order.'''
         if team_id is not None:
             agents = [a for a in self if a.state.team_id == team_id]
@@ -52,7 +52,7 @@ class BattleAgentSet(typing.List):
         
         return self.__class__(random.sample(agents, len(agents)))
     
-    def from_team(self, team_id: int) -> BattleAgentSet:
+    def from_team(self, team_id: int) -> BattleAgentList:
         '''Get agents of a specific team.'''
         return self.__class__(a for a in self if a.state.team_id == team_id)
 
@@ -71,7 +71,7 @@ class BattleGame:
     next_id: int = 0
     map: mase.HexMap = None
     #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
-    #agents: BattleAgentSet = dataclasses.field(default_factory=BattleAgentSet)
+    #agents: BattleAgentList = dataclasses.field(default_factory=BattleAgentList)
     actions: typing.List[battlecontroller.Action] = dataclasses.field(default_factory=list)
     info_history: typing.List[typing.Dict] = dataclasses.field(default_factory=list)
     
@@ -102,7 +102,7 @@ class BattleGame:
             # prepare interface for AI to use
             new_map = copy.deepcopy(self.map)
             ai_controller = battlecontroller.BattleController(team_id, new_map)
-            agents = BattleAgentSet(new_map.agents)
+            agents = BattleAgentList(new_map.agents)
             
             # execute AI for this turn
             #ai(team_id, new_map, new_pool, ctrlr)
@@ -124,7 +124,8 @@ class BattleGame:
         random.seed(self.map_seed)
         
         self.map = self.generate_random_map()
-        positions = self.map.positions()
+        #positions = self.map.positions()
+        locations = self.map.locations()
         
         # set up agents
         for _ in range(self.num_start_warriors):
@@ -134,10 +135,11 @@ class BattleGame:
                 agent = mase.Agent(self.next_agent_id(), BattleAgentState(team_id), _map=self.map)
                 
                 # put agent in free, non-blocked location
-                loc = random.choice()
+                loc = random.choice(locations)
                 while loc.state.is_blocked or len(loc.agents):
-                    pos = random.choice(positions)
-                    self.map.add_agent(agent, pos)
+                    loc = random.choice(locations)
+                
+                self.map.add_agent(agent, loc.pos)
                 
         # spread orbs
         free_loc = set([loc for loc in self.map.locations() if not loc.state.is_blocked])
@@ -153,10 +155,11 @@ class BattleGame:
     
     def generate_random_map(self) -> mase.HexMap:
         '''Generates a random map according to some conditions.'''
-        game_map = mase.HexMap(self.map_radius, default_state = BattleLocationState(0, False))
+        game_map = mase.HexMap(self.map_radius, default_loc_state = BattleLocationState(0, False))
         
         # block off some areas of the map
-        blocked_pos = random.sample(game_map.positions, int(len(game_map)*self.blocked_ratio))
+        all_pos = game_map.positions()
+        blocked_pos = random.sample(all_pos, int(len(game_map)*self.blocked_ratio))
         for pos in blocked_pos:
             game_map[pos].state.is_blocked = True
         
@@ -165,7 +168,7 @@ class BattleGame:
     def get_info(self):
         return {
             'actions': [[a.get_info() for a in tactions] for tactions in self.actions],
-            'agents': [a.get_info() for a in self.map.agents],
+            'agents': [a.get_info() for a in self.map.agents()],
             'map': self.map.get_info(),
         }
         

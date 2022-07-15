@@ -1,6 +1,7 @@
 import battlegame
 import exampleai
 import mase
+import collections
 #from mase.position.pyhexposition import HexPos
 
 def run_game(seed):
@@ -29,7 +30,7 @@ def run_game(seed):
     if not timeout_finish:
         #winct[game.get_winner().__name__] += 1
         return game.get_winner().__name__
-    else:            
+    else:
             return None
 
 
@@ -38,11 +39,8 @@ if __name__ == '__main__':
     
     hexmap = mase.HexMap(10)
     print(hexmap)
-    print(len(hexmap.graph.es))
-    hexmap.graph.write_graphml('tmp/mynet.graphml')
-    sp = hexmap.shortest_path(mase.HexPos(0,0,0), mase.HexPos(-3, 3, 0))
+    sp = hexmap.pathfind_dfs(mase.HexPos(0,0,0), mase.HexPos(-3, 3, 0))
     print(sp)
-    exit()
     
     import tqdm
     save_game = True

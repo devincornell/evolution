@@ -46,7 +46,7 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: typing.List[mase
             pass
         
 
-def attack_consume(team_id: int, game_map: mase.HexMap, agents: battlegame.BattleAgentSet, controller: battlecontroller.BattleController):
+def attack_consume(team_id: int, game_map: mase.HexMap, agents: battlegame.BattleAgentList, controller: battlecontroller.BattleController):
     
     # choose agents in random order so some 
     for agent in agents.from_team(team_id):

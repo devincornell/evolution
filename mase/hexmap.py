@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 import copy
 import dataclasses
 import typing
@@ -5,7 +8,9 @@ import numpy as np
 
 #from first.agentid import AgentID
 #from .agentid import AgentID
-from .agent import Agent
+
+#if typing.TYPE_CHECKING:
+from .agent import Agent, AgentSet
 
 from .location import Location, LocationState, Locations
 from .position import HexPos
@@ -53,6 +58,25 @@ class HexMap:
     def __contains__(self, pos: HexPos) -> bool:
         return pos in self.pos_loc
     
+    ############################# Useful for User #############################            
+    
+    def region(self, center: HexPos, dist: int) -> set:
+        '''Get set of positions within the given distance.'''
+        return center.neighbors(dist) & set(self.pos_loc.keys())
+
+    def region_locs(self, center: HexPos, dist: int) -> list:
+        '''Get sequence of locations in the given region.'''
+        return [self.loc(pos) for pos in self.region(center, dist)]
+    
+    def pathfind_dfs(self, src: HexPos, target: HexPos, use_loc: typing.Callable = None, max_dist: int = None):
+        '''Apply pathfinding algorithm where use_loc is used to determine '
+            whether a location is traversable.
+        '''
+        if use_loc is None:
+            use_loc = lambda x: True
+        useset = set(loc.pos for loc in self.locations() if use_loc(loc))
+        return src.pathfind_dfs(target=target, useset=useset, max_dist=max_dist)
+    
     ############################# Access/Lookup Locations/Positions/Agents #############################
     def loc(self, pos: HexPos) -> Location:
         '''Get the location at a given position.'''
@@ -72,24 +96,17 @@ class HexMap:
         except KeyError:
             raise AgentDoesNotExistError(f'Agent {agent.id} does not exist on the map.')
         
-    @property
     def positions(self) -> typing.Set[HexPos]:
+        '''Get a set of positions in this map.'''
         return set(self.pos_loc.keys())
     
-    @property
     def locations(self) -> Locations:
-        '''Get locations after filtering and sorting.'''
+        '''Get locations associated with this lineup.'''
         return Locations(self.pos_loc.values())
     
-    
-    ############################# Location Lookups #############################
-    def region(self, center: HexPos, dist: int) -> set:
-        '''Get set of positions within the given distance.'''
-        return center.neighbors(dist) & set(self.pos_loc.keys())
-
-    def region_locs(self, center: HexPos, dist: int) -> list:
-        '''Get sequence of locations in the given region.'''
-        return [self.loc(pos) for pos in self.region(center, dist)]
+    def agents(self) -> AgentSet:
+        '''Get agents associated with this map.'''
+        return AgentSet(self.agent_positions.keys())
 
     ############################# Manipulate Agents #############################
     
