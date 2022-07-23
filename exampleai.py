@@ -10,7 +10,7 @@ import mase
 #from mase.agent import Agent
 #from mase import agentstatepool
 
-def consume_attack(team_id: int, game_map: mase.HexMap, agents: typing.List[mase.Agent], controller: battlecontroller.BattleController):
+def consume_attack(team_id: int, game_map: mase.HexMap, agents: battlegame.BattleAgentList, controller: battlecontroller.BattleController):
     #blockedset = {loc.pos.coords() for loc in game_map.locations(filter=lambda l: l.state.is_blocked)}
     my_agents = [a for a in agents if a.state.team_id == team_id]
     for agent in my_agents:

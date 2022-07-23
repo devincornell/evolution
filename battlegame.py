@@ -79,16 +79,6 @@ class BattleGame:
         '''Each player is a function or callable class to play the game.'''
         self.setup()
         
-    def run(self):
-        '''Start the simulation.'''
-        i = 1
-        while not self.is_finished():
-            self.step()
-            i += 1
-            
-            if i > self.max_turns:
-                break
-        
     def is_finished(self):
         return len(set([a.state.team_id for a in self.map.agents])) <= 1
         
