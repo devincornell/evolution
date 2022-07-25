@@ -9,7 +9,9 @@ import json
 import copy
 
 #from battlecontroller import BattleController
-import battlecontroller
+#import battlecontroller
+from .controller import BattleController
+from .actions import Action
 from mase.agent import Agent
 
 @dataclasses.dataclass
@@ -72,7 +74,7 @@ class BattleGame:
     map: mase.HexMap = None
     #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
     #agents: BattleAgentList = dataclasses.field(default_factory=BattleAgentList)
-    actions: typing.List[battlecontroller.Action] = dataclasses.field(default_factory=list)
+    actions: typing.List[Action] = dataclasses.field(default_factory=list)
     info_history: typing.List[typing.Dict] = dataclasses.field(default_factory=list)
     
     def __post_init__(self):
@@ -80,7 +82,7 @@ class BattleGame:
         self.setup()
         
     def is_finished(self):
-        return len(set([a.state.team_id for a in self.map.agents])) <= 1
+        return len(set([a.state.team_id for a in self.map.agents()])) <= 1
         
     def get_winner(self):
         team_id = next(iter(self.map.agents)).state.team_id
@@ -91,15 +93,15 @@ class BattleGame:
             
             # prepare interface for AI to use
             new_map = copy.deepcopy(self.map)
-            ai_controller = battlecontroller.BattleController(team_id, new_map)
-            agents = BattleAgentList(new_map.agents)
+            ai_controller = BattleController(team_id, new_map)
+            agents = BattleAgentList(new_map.agents())
             
             # execute AI for this turn
             #ai(team_id, new_map, new_pool, ctrlr)
             ai(team_id, new_map, agents, ai_controller)
             
             # get user actions and apply them to real map and pool
-            #game_controller = battlecontroller.BattleController(team_id, self.map, self.pool)
+            #game_controller = BattleController(team_id, self.map, self.pool)
             #game_controller.apply_actions(ai_controller.get_actions())
             self.actions.append(ai_controller.get_actions())
             

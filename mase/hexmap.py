@@ -131,6 +131,6 @@ class HexMap:
     ############################# Other Helpers #############################
     def get_info(self) -> typing.List[dict]:
         '''Get dictionary information about each location.'''
-        return [loc.get_info() for loc in self.locs.values()]
+        return [loc.get_info() for loc in self.pos_loc.values()]
     
     

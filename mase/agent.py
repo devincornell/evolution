@@ -42,8 +42,13 @@ class Agent:
     def __hash__(self):
         return hash(self.id)
     
-    def __eq__(self, other):
-        return self.id == other.id
+    def __eq__(self, other: Agent):
+        '''Compare ids.'''
+        return (
+            self.__class__ == other.__class__ and 
+            self.id == other.id
+        )
+    
     
     def get_info(self) -> typing.Dict:
         return {
@@ -74,12 +79,12 @@ class Agent:
     @property
     def pos(self) -> HexPos:
         '''Agents current position.'''
-        return self.map.agent_pos(self.id)
+        return self.map.agent_pos(self)
     
     @property
     def loc(self) -> Location:
         '''Location at Agents current position.'''
-        return self.map.agent_loc(self.id)
+        return self.map.agent_loc(self)
     
     ##################### Utility Functions for User #####################
     def pathfind_dfs(self, target: HexPos, use_loc: typing.Callable = None, max_dist: int = None):
@@ -91,12 +96,12 @@ class Agent:
     def nearest_agents(self) -> AgentSet:
         '''Get agents nearest to this agent after filtering criteria.'''
         sortkey = lambda a: self.pos.dist(a.pos)
-        return [a for a in sorted(self.map.agents, key=sortkey) if a != self]
+        return [a for a in sorted(self.map.agents(), key=sortkey) if a != self]
 
     def nearest_locations(self) -> Location:
         '''Get locations nearest to this agent.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
-        return list(sorted(self.map.locations, key=sortkey))
+        return list(sorted(self.map.locations(), key=sortkey))
         
     ##################### Pathfinding Functions #####################
     def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):

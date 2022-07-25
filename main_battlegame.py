@@ -1,12 +1,11 @@
 import battlegame
-import exampleai
 import mase
 import collections
 #from mase.position.pyhexposition import HexPos
 
 def run_game(seed):
     game = battlegame.BattleGame(
-        ai_players = [exampleai.consume_attack, exampleai.attack_consume],
+        ai_players = [battlegame.consume_attack, battlegame.attack_consume],
         map_radius = 8,
         blocked_ratio = 0.2,
         orb_ratio = 0.01,
@@ -31,7 +30,7 @@ def run_game(seed):
         #winct[game.get_winner().__name__] += 1
         return game.get_winner().__name__
     else:
-            return None
+        return None
 
 
 
@@ -44,8 +43,10 @@ if __name__ == '__main__':
     
     import tqdm
     save_game = True
-    winct = collections.Counter()
-    #for seed in tqdm.tqdm(range(100)):
+    winct = collections.Counter(run_game(seed) for seed in tqdm.tqdm(range(3)))
+    print(winct)
+    
+    exit()
     seeds = list(range(100))
     
     import multiprocessing
@@ -53,5 +54,5 @@ if __name__ == '__main__':
         results = p.map(run_game, seeds)
 
         
-    print(collections.Counter(results))
+    #print(collections.Counter(results))
     

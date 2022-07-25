@@ -2,77 +2,19 @@ import typing
 import collections
 import dataclasses
 from typing import List
-import mase
- 
-from battlegameerrors import *
-
 import enum
-from mase.agent import Agent
 
-from mase.agentid import AgentID
-
-class ActionType(enum.Enum):
-    MOVE = enum.auto()
-    ATTACK = enum.auto()
-    CONSUME = enum.auto()
-    
-class Action:
-    pass
-    #def get_info(self) -> typing.Dict:
-    #    return dataclasses.asdict(self)
-
-@dataclasses.dataclass
-class MoveAction(Action):
-    agent_id: mase.AgentID
-    old_pos: mase.HexPos
-    new_pos: mase.HexPos
-    action_type: ActionType = ActionType.MOVE
-    
-    def get_info(self) -> typing.Dict:
-        return {
-            'action_type': str(self.action_type),
-            'agent_id': self.agent_id,
-            'new_pos': self.new_pos.coords(),
-            'new_pos_xy': (self.new_pos.x, self.new_pos.y),
-            'old_pos': self.old_pos.coords(),
-            'old_pos_xy': (self.old_pos.x, self.old_pos.y),
-        }
+from mase import Agent, AgentID, HexMap, HexPos
 
 
-@dataclasses.dataclass
-class AttackAction(Action):
-    agent_id: mase.AgentID
-    target_id: mase.AgentID
-    target_pos: tuple
-    target_pos_xy: tuple
-    action_type: ActionType = ActionType.ATTACK
-    
-    def get_info(self) -> typing.Dict:
-        return {
-            'action_type': str(self.action_type),
-            'agent_id': self.agent_id,
-            'target_id': self.target_id,
-            'target_pos': self.target_pos,
-            'target_pos_xy': self.target_pos_xy,
-        }
-    
-@dataclasses.dataclass
-class ConsumeAction(Action):
-    agent_id: mase.AgentID
-    action_type: ActionType = ActionType.CONSUME
-
-    def get_info(self) -> typing.Dict:
-        return {
-            'action_type': str(self.action_type),
-            'agent_id': self.agent_id,
-        }
+from .errors import *
+from .actions import Action, ActionType, AttackAction, MoveAction, ConsumeAction
 
 @dataclasses.dataclass
 class BattleController:
     '''This acts like the "Controller" for the game.'''
     team_id: int
-    map: mase.HexMap
-    #pool: mase.AgentStatePool
+    map: HexMap
     agent_lookup: typing.Dict[AgentID,Agent] = dataclasses.field(default_factory=dict)
     action_sequence: list = dataclasses.field(default_factory=list)
     move_ct: collections.Counter = dataclasses.field(default_factory=collections.Counter)
@@ -80,9 +22,9 @@ class BattleController:
     verbose: bool = False
     
     def __post_init__(self):
-        self.agent_lookup = {a.id:a for a in self.map.agents}
+        self.agent_lookup = {a.id:a for a in self.map.agents()}
     
-    def move(self, agent: mase.Agent, new_position: mase):
+    def move(self, agent: Agent, new_position: HexPos):
         '''Move the agent to a new position.'''
         new_loc = self.map[new_position]
         
@@ -107,7 +49,7 @@ class BattleController:
         self.move_ct[agent] += 1
         if self.verbose: print(f'Agent {agent.id} moved {agent.pos.dist(new_position)} positions to {new_position}.')
         
-    def attack(self, agent: mase.Agent, target: mase.Agent):
+    def attack(self, agent: Agent, target: Agent):
         '''Attack an agent of the opposite team.'''
         
         # do some error checking
@@ -121,9 +63,9 @@ class BattleController:
         target.state.health -= agent.state.attack
         
         if target.state.health <= 0:
-            self.agent_lookup.remove_agent(target.id)
-            #self.map.remove_agent(target_agent.id)
-            agent.state.health += 1
+            #self.agent_lookup.remove_agent(target.id)
+            self.map.remove_agent(target)
+            #agent.state.health += 1
             if self.verbose: print(f'Agent {agent.id} killed {target.id}: {agent} vs {target}.')
         else:
             if self.verbose: print(f'Agent {agent.id} attacked {target.id}, reducing '
@@ -134,7 +76,7 @@ class BattleController:
         self.action_sequence.append(action)
         
         
-    def consume(self, agent: mase.Agent):
+    def consume(self, agent: Agent):
         '''Agent can collect an orb from the location at it's current position.'''
         
         self.check_control(agent)
@@ -150,12 +92,12 @@ class BattleController:
         self.action_sequence.append(ConsumeAction(agent.id))
         if self.verbose: print(f'Agent {agent.id} consumed 1 orb at location {agent.loc.state}.')
         
-    def check_action(self, agent: mase.Agent):
+    def check_action(self, agent: Agent):
         '''Make sure the agent can take another action.'''
         if self.action_ct[agent] > 0:
             raise OutOfActionsError(f'Agent {agent.id} has already taken an action this turn.')
             
-    def check_control(self, agent: mase.Agent):
+    def check_control(self, agent: Agent):
         '''Check if user can control the given agent.'''
         if self.team_id != agent.state.team_id:
             raise CannotControlOtherTeamMemberError(f'You cannot order a member of another team to attack. '

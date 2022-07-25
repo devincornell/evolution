@@ -2,24 +2,23 @@ import random
 import collections
 import typing
 import json
-import battlecontroller
-#from battlegame import BattleGame
-import battlegame
-from battlegameerrors import *
-import mase
-#from mase.agent import Agent
-#from mase import agentstatepool
 
-def consume_attack(team_id: int, game_map: mase.HexMap, agents: battlegame.BattleAgentList, controller: battlecontroller.BattleController):
+#from battlegame import BattleGame
+from mase import HexMap, Agent
+from .errors import *
+from .game import BattleAgentList
+from .controller import BattleController
+
+def consume_attack(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
     #blockedset = {loc.pos.coords() for loc in game_map.locations(filter=lambda l: l.state.is_blocked)}
     my_agents = [a for a in agents if a.state.team_id == team_id]
     for agent in my_agents:
         
         # if agent is standing on an orb, consume it. otherwise, try to attack
         try:
-            attack_if_near(team_id, agent, controller)
+            attack_if_near(team_id, agent, ctrlr)
             if agent.loc.state.num_orbs > 0:
-                controller.consume(agent.id)
+                ctrlr.consume(agent)
         except OutOfActionsError:
             pass
             
@@ -35,18 +34,18 @@ def consume_attack(team_id: int, game_map: mase.HexMap, agents: battlegame.Battl
                 
                 # compute the number of steps that agent can traverse
                 nsteps = min(agent.state.speed, len(path)-1)
-                controller.move(agent.id, path[nsteps])
+                ctrlr.move(agent, path[nsteps])
                 break
         
         try:
-            attack_if_near(team_id, agent, controller)
+            attack_if_near(team_id, agent, ctrlr)
             if agent.loc.state.num_orbs > 0:
-                controller.consume(agent.id)
+                ctrlr.consume(agent)
         except OutOfActionsError:
             pass
         
 
-def attack_consume(team_id: int, game_map: mase.HexMap, agents: battlegame.BattleAgentList, controller: battlecontroller.BattleController):
+def attack_consume(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
     
     # choose agents in random order so some 
     for agent in agents.from_team(team_id):
@@ -56,9 +55,9 @@ def attack_consume(team_id: int, game_map: mase.HexMap, agents: battlegame.Battl
                     
         # try attacking first, then see if there are any orbs to consume
         try:
-            attack_if_near(team_id, agent, controller)
+            attack_closest_if_near(team_id, agent, ctrlr)
             if agent.loc.state.num_orbs > 0:
-                controller.consume(agent.id)
+                ctrlr.consume(agent)
         except OutOfActionsError:
             pass
         
@@ -71,17 +70,18 @@ def attack_consume(team_id: int, game_map: mase.HexMap, agents: battlegame.Battl
                     nsteps = min(agent.state.speed, len(path)-1)
                     
                     if agent.pos != path[nsteps]:
-                        controller.move(agent.id, path[nsteps])
+                        ctrlr.move(agent, path[nsteps])
                     break
         
         try:
-            attack_if_near(team_id, agent, controller)
+            attack_closest_if_near(team_id, agent, ctrlr)
             if agent.loc.state.num_orbs > 0:
-                controller.consume(agent.id)
+                ctrlr.consume(agent)
         except OutOfActionsError:
             pass
 
-def attack_if_near(team_id: int, agent: mase.Agent, controller: battlecontroller.BattleController):
-    for other_agent in agent.nearest_agents(lambda a: a.pos.dist(agent.pos) == 1 and a.state.team_id != team_id):
-        controller.attack(agent.id, other_agent.id)
-        break
+def attack_closest_if_near(team_id: int, agent: Agent, ctrlr: BattleController):
+    for other_agent in agent.nearest_agents():
+        if agent.pos.dist(other_agent.pos) == 1 and team_id != other_agent.state.team_id:
+            ctrlr.attack(agent, other_agent)
+            break
