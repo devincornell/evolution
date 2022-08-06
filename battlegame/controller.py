@@ -32,7 +32,7 @@ class BattleController:
         self.check_control(agent)
         if self.move_ct[agent] > 0:
             raise OutOfMovesError(f'Agent {agent.id} has already moved this turn.')
-        elif len(agent.loc.agents):
+        elif len(new_loc.agents):
             existing_agent = list(new_loc.agents)[0]
             raise AgentAlreadyExistsInLocationError(f'Cannot move agent {agent.id}: '
                 f'agent {existing_agent} already exists at {new_position}.')
@@ -62,17 +62,18 @@ class BattleController:
         # apply attack
         target.state.health -= agent.state.attack
         
+        # register action
+        action = AttackAction(agent.id, target_id=target.id, target_pos=target.pos.coords(), target_pos_xy=target.pos.coords_xy())
+        
         if target.state.health <= 0:
-            #self.agent_lookup.remove_agent(target.id)
             self.map.remove_agent(target)
-            #agent.state.health += 1
             if self.verbose: print(f'Agent {agent.id} killed {target.id}: {agent} vs {target}.')
         else:
             if self.verbose: print(f'Agent {agent.id} attacked {target.id}, reducing '
                 f'health by {agent.state.attack} to {target.state.health}.')
         
+        # mark the action as taken and add it to the sequence
         self.action_ct[agent] += 1
-        action = AttackAction(agent.id, target_id=target.id, target_pos=target.pos.coords(), target_pos_xy=target.pos.coords_xy())
         self.action_sequence.append(action)
         
         

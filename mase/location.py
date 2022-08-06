@@ -44,6 +44,11 @@ class Location:
     def __contains__(self, agent: Agent) -> bool:
         '''Check if this location contains the agent.'''
         return agent in self.agents
+    
+    @property
+    def num_agents(self):
+        '''Get number of agents in this location.'''
+        return len(self.agents)
         
     ############################# Utility #############################    
     def get_info(self) -> typing.Dict:
@@ -54,11 +59,11 @@ class Location:
             'coords': self.pos.coords(),
             #'x': self.pos.x, 'y': self.pos.y, 
             'xy': self.pos.coords_xy(),
-            'agents': list(self.agents), 
+            'agents': [a.id for a in self.agents], 
             **self.state.get_info()
         }
     
-    ############################# Working With Agents #############################
+    ############################# Manipulating Agents #############################
     def add_agent(self, agent: Agent):
         '''Adds agent to this location.'''
         self.agents.add(agent)
@@ -66,6 +71,9 @@ class Location:
     def remove_agent(self, agent: Agent):
         '''Removes agent to this location.'''
         self.agents.remove(agent)
+        
+
+        
 
 class Locations(typing.List):
     #def __call__(self, **kwargs):

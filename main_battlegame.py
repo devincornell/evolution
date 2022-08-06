@@ -3,15 +3,15 @@ import mase
 import collections
 #from mase.position.pyhexposition import HexPos
 
-def run_game(seed):
+def run_game(seed: int = 0, save_game: bool = True):
     game = battlegame.BattleGame(
-        ai_players = [battlegame.consume_attack, battlegame.attack_consume],
-        map_radius = 8,
+        ai_players = [battlegame.attack_consume, battlegame.consume_attack],
+        map_radius = 10,
         blocked_ratio = 0.2,
-        orb_ratio = 0.01,
-        num_start_warriors = 3,
+        orb_ratio = 0.1,
+        num_start_warriors = 10,
         map_seed=seed, 
-        max_turns=500,
+        max_turns=50,
     )
     
     timeout_finish = False
@@ -42,9 +42,13 @@ if __name__ == '__main__':
     print(sp)
     
     import tqdm
-    save_game = True
-    winct = collections.Counter(run_game(seed) for seed in tqdm.tqdm(range(3)))
-    print(winct)
+    
+    results = list()
+    for seed in tqdm.tqdm(range(500)):
+        result = run_game(seed)
+        results.append(result)
+        winct = collections.Counter(results)
+        print('\n', winct)
     
     exit()
     seeds = list(range(100))

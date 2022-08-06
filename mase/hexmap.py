@@ -54,9 +54,6 @@ class HexMap:
     
     def __len__(self) -> int:
         return len(self.pos_loc)
-
-    def __contains__(self, pos: HexPos) -> bool:
-        return pos in self.pos_loc
     
     ############################# Useful for User #############################            
     

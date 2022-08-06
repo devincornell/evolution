@@ -96,12 +96,16 @@ class Agent:
     def nearest_agents(self) -> AgentSet:
         '''Get agents nearest to this agent after filtering criteria.'''
         sortkey = lambda a: self.pos.dist(a.pos)
-        return [a for a in sorted(self.map.agents(), key=sortkey) if a != self]
+        return AgentSet([a for a in sorted(self.map.agents(), key=sortkey) if a != self])
 
-    def nearest_locations(self) -> Location:
+    def nearest_locations(self) -> Locations:
         '''Get locations nearest to this agent.'''
         sortkey = lambda loc: self.pos.dist(loc.pos)
         return list(sorted(self.map.locations(), key=sortkey))
+    
+    def neighbor_locs(self, dist: int = 1) -> Locations:
+        '''Get locations within specified distance.'''
+        return self.map.region_locs(self.pos, dist=dist)
         
     ##################### Pathfinding Functions #####################
     def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
