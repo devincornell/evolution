@@ -27,6 +27,7 @@ class BattleController:
     def move(self, agent: Agent, new_position: HexPos):
         '''Move the agent to a new position.'''
         new_loc = self.map[new_position]
+        current_pos = agent.pos
         
         # do some error checking
         self.check_control(agent)
@@ -47,7 +48,7 @@ class BattleController:
         self.map.move_agent(agent, new_position)
         self.action_sequence.append(MoveAction(agent.id, agent.pos, new_position))
         self.move_ct[agent] += 1
-        if self.verbose: print(f'Agent {agent.id} moved {agent.pos.dist(new_position)} positions to {new_position}.')
+        if self.verbose: print(f'Agent {agent.id} moved {current_pos.dist(new_position)} positions from {current_pos} to {new_position}.')
         
     def attack(self, agent: Agent, target: Agent):
         '''Attack an agent of the opposite team.'''
@@ -67,7 +68,7 @@ class BattleController:
         
         if target.state.health <= 0:
             self.map.remove_agent(target)
-            if self.verbose: print(f'Agent {agent.id} killed {target.id}: {agent} vs {target}.')
+            if self.verbose: print(f'Agent {agent.id} killed {target.id}: \n\t{agent} \n\tvs \n\t{target}.')
         else:
             if self.verbose: print(f'Agent {agent.id} attacked {target.id}, reducing '
                 f'health by {agent.state.attack} to {target.state.health}.')

@@ -73,6 +73,7 @@ class BattleGame:
     max_turns: int = 100
     next_id: int = 0
     do_copy_map: bool = False
+    verbose: bool = False
     map: mase.HexMap = None
     #pool: mase.AgentPool = dataclasses.field(default_factory=mase.AgentPool)
     #agents: BattleAgentList = dataclasses.field(default_factory=BattleAgentList)
@@ -92,21 +93,21 @@ class BattleGame:
         
     def step(self):
         for team_id, ai in enumerate(self.ai_players):
-            
+            if self.verbose: print(f'Team {team_id} start.')
             if self.do_copy_map:
                 # allow users to change only their copied map
                 ai_map = copy.deepcopy(self.map)
             else:
                 ai_map = self.map
         
-            ai_ctrlr = BattleController(team_id, ai_map)
+            ai_ctrlr = BattleController(team_id, ai_map, verbose=self.verbose)
             ai_agents = BattleAgentList(ai_map.agents())
         
             # execute AI for this turn
             ai(team_id, ai_map, ai_agents, ai_ctrlr)
             
             if self.do_copy_map:
-                ctrlr = BattleController(team_id, self.map)
+                ctrlr = BattleController(team_id, self.map, verbose=self.verbose)
                 ctrlr.apply_actions(ai_ctrlr.get_actions())
                 actions = ctrlr.actions()
             else:

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 #%%cython
 
+import numpy as np
 import typing
+import math
 #import itertools
 import math
 #import dataclasses
@@ -12,7 +14,7 @@ import math
 from .errors import *
 from .position import Position
 #from libc.math cimport sin
-
+from .algorithms import a_star
 import time
 
 class HexPos(Position):
@@ -45,8 +47,8 @@ class HexPos(Position):
     def __repr__(self):
         return f'{self.coords()}'
 
-    def dist(self, other):
-        return (math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))/2
+    def dist(self, other) -> int:
+        return int((math.fabs(self.q-other.q) + math.fabs(self.r-other.r) + math.fabs(self.s-other.s))//2)
 
     def offset(self, offset_q: int, offset_r: int, offset_s: int):
         '''Get a new object with the specified offset coordinates.'''
@@ -66,6 +68,10 @@ class HexPos(Position):
         '''Return direct neighbors sorted by distance from target.'''
         return list(sorted(self.neighbors(dist), key=lambda n: target.dist(n)))
     
+    def shortest_path(self, target: HexPos, allowed_pos: typing.Set[HexPos] = None, 
+            max_dist: int = None, verbose: bool = False) -> typing.List[HexPos]:
+        '''Uses A* to find the shortest path between this position in the target, and None if there is no path.'''
+        return a_star(self, target, allowed_pos, max_dist=max_dist, verbose=verbose)
 
     def pathfind_dfs(self, target: HexPos, useset: typing.Set[HexPos] = None, 
             max_dist: int = None, verbose: bool = False) -> typing.List[HexPos]:

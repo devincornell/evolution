@@ -18,16 +18,37 @@ def random_walk_ai(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrl
     for agent in agents:
         if agent.state.team_id == team_id:
             
-            nearby = agent.neighbor_locs(dist=agent.state.speed)
-            potential_locs = [loc for loc in nearby if not loc.num_agents and not loc.state.is_blocked]
+            try:
+                attack_closest_if_near(team_id, agent, ctrlr)
+                if agent.loc.state.num_orbs > 0:
+                    ctrlr.consume(agent)
+            except OutOfActionsError:
+                pass
             
-            if len(potential_locs):
-                new_loc = random.choice(potential_locs)
-                ctrlr.move(agent, new_loc.pos)
+            nearby = agent.neighbor_locs(dist=agent.state.speed)
+            potential_pos = [loc.pos for loc in nearby if not loc.num_agents and not loc.state.is_blocked]
+            
+            if len(potential_pos):
+                new_pos = random.choice(potential_pos)
+                ctrlr.move(agent, new_pos)
+                
+                try:
+                    attack_closest_if_near(team_id, agent, ctrlr)
+                    if agent.loc.state.num_orbs > 0:
+                        ctrlr.consume(agent)
+                except OutOfActionsError:
+                    pass
 
 
-def consume_attack(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
-    #ctrlr.verbose = True
+
+def consume_attack_ai(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
+    
+    # if no orbs left, just prioritize attacking
+    num_orbs = sum([l.state.num_orbs for l in game_map.locations()])
+    if num_orbs == 0:
+        attack_consume_ai(team_id, game_map, agents, ctrlr)
+    
+    
     my_agents = [a for a in agents if a.state.team_id == team_id]
     for agent in my_agents:
         
@@ -46,8 +67,8 @@ def consume_attack(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrl
         
         # check each location that has an orb but no other agents
         for loc in agent.nearest_locations():
-            if loc.state.num_orbs > 0 and not len(loc.agents):
-                path = agent.pathfind_dfs(loc.pos, valid_positions)
+            if loc.state.num_orbs > 0 and not len(loc.agents) and loc is not agent.loc:
+                path = agent.shortest_path(loc.pos, valid_positions)
                 
                 # this means that there is a path
                 if path is not None:
@@ -65,14 +86,14 @@ def consume_attack(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrl
             pass
         
 
-def attack_consume(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
+def attack_consume_ai(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrlr: BattleController):
     #ctrlr.verbose = True
-    # choose agents in random order so some 
+    # choose agents in random order so some
     for agent in agents.from_team(team_id):
         
         # find map positions that are valid for moving to
         valid_positions = {loc.pos for loc in game_map.locations() if not loc.state.is_blocked and not len(loc.agents)}
-                    
+        
         # try attacking first, then see if there are any orbs to consume
         try:
             attack_closest_if_near(team_id, agent, ctrlr)
@@ -81,10 +102,11 @@ def attack_consume(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrl
         except OutOfActionsError:
             pass
         
+        # find nearest agents
         for other_agent in agent.nearest_agents():
             if other_agent.state.team_id != team_id:
                     
-                path = agent.pathfind_dfs(other_agent.pos, valid_positions)
+                path = agent.shortest_path(other_agent.pos, valid_positions)
                 if path is not None:
                     path = path[:-1]
                     nsteps = min(agent.state.speed, len(path)-1)
@@ -92,6 +114,7 @@ def attack_consume(team_id: int, game_map: HexMap, agents: BattleAgentList, ctrl
                     if agent.pos != path[nsteps]:
                         ctrlr.move(agent, path[nsteps])
                     break
+                #print(f'\t{agent.id}->{other_agent.id}: {path} / {agent.pathfind_dfs(other_agent.pos, valid_positions)}')
         
         try:
             attack_closest_if_near(team_id, agent, ctrlr)

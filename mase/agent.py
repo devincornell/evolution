@@ -108,6 +108,10 @@ class Agent:
         return self.map.region_locs(self.pos, dist=dist)
         
     ##################### Pathfinding Functions #####################
+    def shortest_path(self, target: HexPos, allowed_pos: typing.Set[HexPos], **kwargs):
+        '''Use A* heuristic-based shortest path algorithm to find shortest path to target.'''
+        return self.pos.shortest_path(target, allowed_pos=allowed_pos, **kwargs)
+    
     def pathfind_dfs(self, target: HexPos, use_positions: typing.Set[HexPos]):
         '''Find the first path from source to target using dfs.
         Args:
